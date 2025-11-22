@@ -4,7 +4,7 @@ import { getTopTags } from './utils/readingHistory';
 
 const superagent = superagentPromise(_superagent, global.Promise);
 
-const API_ROOT = 'http://localhost:3000/api';
+const API_ROOT = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
 const encode = encodeURIComponent;
 const responseBody = res => res.body;
