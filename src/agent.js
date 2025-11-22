@@ -4,7 +4,7 @@ import { getTopTags } from './utils/readingHistory';
 
 const superagent = superagentPromise(_superagent, global.Promise);
 
-const API_ROOT = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_ROOT = process.env.REACT_APP_API_URL || 'https://conduitbackend-production.up.railway.app/api';
 
 const encode = encodeURIComponent;
 const responseBody = res => res.body;
@@ -85,6 +85,11 @@ const Articles = {
           combined.push(article);
         }
       });
+      
+      // If no articles from feed or recommendations, get global articles
+      if (combined.length === 0) {
+        return requests.get(`/articles?${limit(10, page)}`);
+      }
       
       return { articles: combined.slice(0, 10), articlesCount: combined.length };
     });
