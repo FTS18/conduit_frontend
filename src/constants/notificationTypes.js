@@ -1,0 +1,11 @@
+export const NOTIFICATION_TYPES = {
+  COMMENT: 'comment',
+  MENTION: 'mention',
+  FOLLOW: 'follow',
+  FAVORITE: 'favorite'
+};
+
+export const LOAD_NOTIFICATIONS = 'LOAD_NOTIFICATIONS';
+export const ADD_NOTIFICATION = 'ADD_NOTIFICATION';
+export const MARK_NOTIFICATION_READ = 'MARK_NOTIFICATION_READ';
+export const CLEAR_NOTIFICATIONS = 'CLEAR_NOTIFICATIONS';
