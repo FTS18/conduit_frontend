@@ -92,14 +92,8 @@ const RecommendedProfiles = (props) => {
 
     if (isFollowing) {
       props.onUnfollow(profile.username);
-      setFollowingSet(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(profile.username);
-        return newSet;
-      });
     } else {
       props.onFollow(profile.username);
-      setFollowingSet(prev => new Set(prev).add(profile.username));
     }
 
     // Optimistically update local state
@@ -109,6 +103,30 @@ const RecommendedProfiles = (props) => {
     setDisplayedProfiles(prev => prev.map(p =>
       p.username === profile.username ? { ...p, following: !p.following } : p
     ));
+
+    // Refetch current user's following list to sync state
+    if (props.currentUser) {
+      setTimeout(() => {
+        agent.Profile.get(props.currentUser.username)
+          .then(res => {
+            const following = new Set(
+              res.profile.following ? 
+              res.profile.following.map((u: any) => u.username) : 
+              []
+            );
+            setFollowingSet(following);
+            setAllProfiles(prev => prev.map(p => ({
+              ...p,
+              following: following.has(p.username)
+            })));
+            setDisplayedProfiles(prev => prev.map(p => ({
+              ...p,
+              following: following.has(p.username)
+            })));
+          })
+          .catch(err => console.error('Error syncing follow state:', err));
+      }, 300);
+    }
   };
 
   if (loading) {

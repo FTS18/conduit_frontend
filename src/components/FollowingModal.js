@@ -57,28 +57,28 @@ const FollowingModal = ({ username, isOpen, onClose, currentUser, onFollow, onUn
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="following-modal-overlay" onClick={onClose}>
+      <div className="following-modal-content" onClick={e => e.stopPropagation()}>
+        <div className="following-modal-header">
           <h3>Following</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="following-modal-close" onClick={onClose}>✕</button>
         </div>
-        <div className="modal-body">
+        <div className="following-modal-body">
           {loading ? (
-            <div className="loading">Loading...</div>
+            <div className="following-loading">Loading...</div>
           ) : following.length === 0 ? (
-            <div className="empty">Not following anyone yet</div>
+            <div className="following-empty">Not following anyone yet</div>
           ) : (
             following.map(user => (
-              <Link key={user.username} to={`/@${user.username}`} className="user-item">
+              <Link key={user.username} to={`/@${user.username}`} className="following-user-item">
                 <UserAvatar username={user.username} image={user.image} size="sm" />
-                <div className="user-info">
-                  <div className="username">{user.username}</div>
-                  <div className="bio">{user.bio || 'Member'}</div>
+                <div className="following-user-info">
+                  <div className="following-username">{user.username}</div>
+                  <div className="following-bio">{user.bio || 'Member'}</div>
                 </div>
                 {currentUser && currentUser.username !== user.username && (
                   <button
-                    className={`follow-btn ${user.following ? 'following' : ''}`}
+                    className={`following-follow-btn ${user.following ? 'following' : ''}`}
                     onClick={(e) => user.following ? handleUnfollow(e, user.username) : handleFollow(e, user.username)}
                   >
                     {user.following ? 'Unfollow' : 'Follow'}
@@ -95,128 +95,179 @@ const FollowingModal = ({ username, isOpen, onClose, currentUser, onFollow, onUn
 };
 
 const styles = `
-  .modal-overlay {
+  .following-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    animation: followingModalFadeIn 0.2s ease-out;
   }
 
-  .modal-content {
+  @keyframes followingModalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .following-modal-content {
     background: var(--bg-card);
-    border-radius: 12px;
+    border-radius: 16px;
     width: 90%;
-    max-width: 500px;
-    max-height: 600px;
+    max-width: 480px;
+    max-height: 70vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    animation: followingModalSlideUp 0.3s ease-out;
   }
 
-  .modal-header {
+  @keyframes followingModalSlideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .following-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
   }
 
-  .modal-header h3 {
+  .following-modal-header h3 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
     color: var(--text-main);
+    letter-spacing: 0.3px;
   }
 
-  .modal-close {
+  .following-modal-close {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     cursor: pointer;
     color: var(--text-secondary);
-    padding: 0;
-    width: 30px;
-    height: 30px;
+    padding: 0.25rem;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
   }
 
-  .modal-close:hover {
+  .following-modal-close:hover {
+    background: var(--bg-hover);
     color: var(--text-main);
   }
 
-  .modal-body {
+  .following-modal-body {
     overflow-y: auto;
     flex: 1;
+    padding: 0.5rem 0;
   }
 
-  .user-item {
+  .following-modal-body::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .following-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .following-modal-body::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+
+  .following-modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+
+  .following-user-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    gap: 0.875rem;
+    padding: 0.75rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 8px;
     text-decoration: none;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
+    cursor: pointer;
   }
 
-  .user-item:hover {
+  .following-user-item:hover {
     background: var(--bg-hover);
   }
 
-  .user-info {
+  .following-user-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
   }
 
-  .username {
+  .following-username {
     font-weight: 600;
     color: var(--text-main);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.2px;
   }
 
-  .bio {
-    font-size: 0.85rem;
+  .following-bio {
+    font-size: 0.8rem;
     color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .follow-btn {
-    padding: 0.4rem 0.8rem;
+  .following-follow-btn {
+    padding: 0.45rem 1rem;
     background: transparent;
-    border: 1px solid var(--primary);
-    border-radius: 20px;
+    border: 1.5px solid var(--primary);
+    border-radius: 22px;
     color: var(--primary);
     font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s ease;
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
-  .follow-btn:hover {
+  .following-follow-btn:hover {
     background: var(--primary);
     color: var(--bg-body);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
-  .follow-btn.following {
-    background: var(--bg-hover);
+  .following-follow-btn.following {
+    background: transparent;
     color: var(--text-secondary);
     border-color: var(--border-color);
   }
 
-  .loading, .empty {
+  .following-follow-btn.following:hover {
+    background: var(--bg-hover);
+    border-color: var(--text-secondary);
+    color: var(--text-main);
+  }
+
+  .following-loading, .following-empty {
     text-align: center;
-    padding: 2rem;
+    padding: 3rem 1.5rem;
     color: var(--text-secondary);
+    font-size: 0.95rem;
   }
 `;
 
