@@ -179,7 +179,7 @@ class ContentModeration extends React.Component {
           .btn-submit {
             flex: 1;
             padding: 0.75rem;
-            background: #5cb85c;
+            background: #000000;
             color: white;
             border: none;
             border-radius: 4px;
@@ -188,7 +188,7 @@ class ContentModeration extends React.Component {
           }
 
           .btn-submit:hover {
-            background: #4a9d4a;
+            background: #333333;
           }
 
           .btn-cancel {
@@ -203,7 +203,7 @@ class ContentModeration extends React.Component {
           }
 
           .success {
-            color: #5cb85c;
+            color: #000000;
             text-align: center;
             padding: 1rem;
           }

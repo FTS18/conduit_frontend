@@ -113,7 +113,11 @@ class ProfileComments extends React.Component {
               <div className="comments-list">
                 {comments.length === 0 ? (
                   <div className="no-comments">
-                    <div className="no-comments-icon">💬</div>
+                    <div className="no-comments-icon">
+                      <span role="img" aria-label="comments">
+                        💬
+                      </span>
+                    </div>
                     <h4>No comments yet</h4>
                     <p>Start engaging with articles to see your comments here!</p>
                   </div>
@@ -140,7 +144,7 @@ class ProfileComments extends React.Component {
                             <span className="upvotes">↑ {comment.upvotes || 0}</span>
                             <span className="downvotes">↓ {comment.downvotes || 0}</span>
                           </span>
-                          <button 
+                          <button
                             className="delete-comment-btn"
                             onClick={() => this.handleDeleteComment(comment)}
                             title="Delete comment"
@@ -159,23 +163,14 @@ class ProfileComments extends React.Component {
 
         <style>{`
           .profile-page {
-            background: #f8f9fa;
+            background: var(--bg-body);
             min-height: 100vh;
           }
 
-          .dark-theme .profile-page {
-            background: #0d0d0d;
-          }
-
           .user-info {
-            background: white;
+            background: var(--bg-card);
             padding: 2rem 0;
-            border-bottom: 1px solid #e1e4e8;
-          }
-
-          .dark-theme .user-info {
-            background: #1a1a1a;
-            border-bottom-color: #333;
+            border-bottom: 1px solid var(--border-color);
           }
 
           .profile-avatar {
@@ -189,21 +184,13 @@ class ProfileComments extends React.Component {
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
-            color: #373a3c;
-          }
-
-          .dark-theme .user-info h4 {
-            color: #e0e0e0;
+            color: var(--text-main);
           }
 
           .user-info p {
             text-align: center;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 1.5rem;
-          }
-
-          .dark-theme .user-info p {
-            color: #aaa;
           }
 
           .comments-list {
@@ -211,16 +198,11 @@ class ProfileComments extends React.Component {
           }
 
           .comment-item {
-            background: white;
-            border: 1px solid #e1e4e8;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1rem;
-          }
-
-          .dark-theme .comment-item {
-            background: #1a1a1a;
-            border-color: #333;
           }
 
           .comment-header {
@@ -238,30 +220,26 @@ class ProfileComments extends React.Component {
 
           .article-link h5 {
             margin: 0;
-            color: #5cb85c;
+            color: var(--text-main);
             font-size: 1.1rem;
             font-weight: 600;
           }
 
           .article-link:hover h5 {
-            color: #6cc76c;
+            color: var(--primary);
             text-decoration: underline;
           }
 
           .comment-date {
-            color: #999;
+            color: var(--text-light);
             font-size: 0.85rem;
             white-space: nowrap;
           }
 
           .comment-body {
-            color: #373a3c;
+            color: var(--text-main);
             line-height: 1.6;
             margin-bottom: 1rem;
-          }
-
-          .dark-theme .comment-body {
-            color: #e0e0e0;
           }
 
           .comment-stats {
@@ -277,43 +255,41 @@ class ProfileComments extends React.Component {
           }
 
           .upvotes {
-            color: #28a745;
+            color: var(--text-main);
             font-weight: 600;
           }
 
           .downvotes {
-            color: #dc3545;
+            color: var(--text-secondary);
             font-weight: 600;
           }
 
           .net-votes {
-            color: #666;
+            color: var(--text-secondary);
             font-weight: 600;
           }
 
-          .dark-theme .net-votes {
-            color: #aaa;
-          }
-
           .delete-comment-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
             padding: 0.4rem 0.8rem;
             border-radius: 4px;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
           }
 
           .delete-comment-btn:hover {
-            background: #c82333;
+            background: var(--bg-hover);
+            color: var(--primary);
+            border-color: var(--primary);
           }
 
           .no-comments {
             text-align: center;
             padding: 4rem 2rem;
-            color: #666;
+            color: var(--text-secondary);
           }
 
           .no-comments-icon {
@@ -324,7 +300,7 @@ class ProfileComments extends React.Component {
 
           .no-comments h4 {
             margin: 0 0 1rem 0;
-            color: #373a3c;
+            color: var(--text-main);
             font-size: 1.5rem;
           }
 
@@ -333,32 +309,16 @@ class ProfileComments extends React.Component {
             font-size: 1.1rem;
           }
 
-          .dark-theme .no-comments {
-            color: #aaa;
-          }
-
-          .dark-theme .no-comments h4 {
-            color: #e0e0e0;
-          }
-
           .comments-header {
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
-            border-bottom: 2px solid #e1e4e8;
+            border-bottom: 2px solid var(--border-color);
           }
 
           .comments-header h4 {
             margin: 0;
-            color: #373a3c;
+            color: var(--text-main);
             font-size: 1.3rem;
-          }
-
-          .dark-theme .comments-header {
-            border-bottom-color: #333;
-          }
-
-          .dark-theme .comments-header h4 {
-            color: #e0e0e0;
           }
 
           @media (max-width: 768px) {

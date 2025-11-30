@@ -68,16 +68,12 @@ class RecommendedArticles extends React.Component {
 
         <style>{`
           .recommended-section {
-            background: white;
+            background: var(--bg-card);
             padding: 1.5rem;
             margin-bottom: 2rem;
             border-radius: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-          }
-
-          .dark-theme .recommended-section {
-            background: #1a1a1a;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
           }
 
           .recommended-header {
@@ -85,25 +81,17 @@ class RecommendedArticles extends React.Component {
           }
 
           .recommended-section h3 {
-            color: #373a3c;
+            color: var(--text-main);
             font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
           }
 
-          .dark-theme .recommended-section h3 {
-            color: #e0e0e0;
-          }
-
           .recommended-reason {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 0.85rem;
             margin: 0;
             font-style: italic;
-          }
-
-          .dark-theme .recommended-reason {
-            color: #aaa;
           }
 
           .recommended-list {
@@ -114,38 +102,35 @@ class RecommendedArticles extends React.Component {
 
           .recommended-item {
             padding: 1rem;
-            background: #f8f9fa;
-            border-left: 3px solid #5cb85c;
+            background: var(--bg-hover);
+            border-left: 3px solid var(--primary);
             border-radius: 0;
             text-decoration: none;
             transition: all 0.2s;
             display: flex;
             flex-direction: column;
-          }
-
-          .dark-theme .recommended-item {
-            background: #222;
+            border: 1px solid transparent;
+            border-left-width: 3px;
           }
 
           .recommended-item:hover {
-            box-shadow: 0 2px 6px rgba(92, 184, 92, 0.2);
+            box-shadow: var(--shadow-md);
             transform: translateY(-2px);
+            background: var(--bg-card);
+            border-color: var(--border-color);
+            border-left-color: var(--primary);
           }
 
           .recommended-item h4 {
-            color: #373a3c;
+            color: var(--text-main);
             font-size: 0.95rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
             line-height: 1.3;
           }
 
-          .dark-theme .recommended-item h4 {
-            color: #e0e0e0;
-          }
-
           .recommended-item p {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 0.85rem;
             margin-bottom: 0.75rem;
             flex-grow: 1;
@@ -153,10 +138,6 @@ class RecommendedArticles extends React.Component {
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-          }
-
-          .dark-theme .recommended-item p {
-            color: #aaa;
           }
 
           .recommended-tags {
@@ -168,8 +149,8 @@ class RecommendedArticles extends React.Component {
           .tag-badge {
             display: inline-block;
             padding: 0.3rem 0.6rem;
-            background: #5cb85c;
-            color: white;
+            background: var(--primary);
+            color: var(--bg-body);
             font-size: 0.75rem;
             border-radius: 12px;
             font-weight: 500;

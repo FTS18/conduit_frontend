@@ -120,7 +120,7 @@ const NotificationBell = ({ currentUser }) => {
         }
 
         .bell-button:hover {
-          color: #5cb85c;
+          color: #000000;
         }
 
         .unread-badge {

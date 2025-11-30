@@ -10,7 +10,7 @@ const CommentContainer = props => {
 
   const sortComments = (comments) => {
     const sorted = [...comments];
-    switch(sortBy) {
+    switch (sortBy) {
       case 'upvoted':
         return sorted.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
       case 'downvoted':
@@ -41,12 +41,12 @@ const CommentContainer = props => {
 
   if (props.currentUser) {
     return (
-      <div className="col-xs-12 col-md-8 offset-md-2">
+      <div className="comment-container-wrapper">
         <div>
           <list-errors errors={props.errors}></list-errors>
-          <CommentForm 
-            slug={props.slug} 
-            onCommentAdded={handleCommentAdded} 
+          <CommentForm
+            slug={props.slug}
+            onCommentAdded={handleCommentAdded}
             currentUser={props.currentUser}
             replyTo={replyTo}
             replyToCommentId={replyToCommentId}
@@ -60,9 +60,9 @@ const CommentContainer = props => {
         <div className="comments-section">
           <div className="comments-header">
             <h3>Comments ({props.comments.length})</h3>
-            <select 
+            <select
               className="sort-select"
-              value={sortBy} 
+              value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}>
               <option value="newest">Newest</option>
               <option value="upvoted">Most Upvoted</option>
@@ -79,60 +79,60 @@ const CommentContainer = props => {
         </div>
 
         <style>{`
-          .comments-section {
+          .comment-container-wrapper {
+            width: 100%;
+            max-width: 100%;
             margin-top: 2rem;
+          }
+
+          .comments-section {
+            margin-top: 2.5rem;
           }
 
           .comments-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
           }
 
           .comments-header h3 {
             margin: 0;
-            color: #373a3c;
-            font-size: 1.25rem;
-          }
-
-          .dark-theme .comments-header h3 {
-            color: #e0e0e0;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            font-weight: 700;
           }
 
           .sort-select {
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-            color: #373a3c;
-            font-size: 0.9rem;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+            min-width: 160px;
           }
 
           .sort-select:focus {
             outline: none;
-            border-color: #5cb85c;
-            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
           }
 
-          .dark-theme .sort-select {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            border-color: #333;
-          }
-
-          .dark-theme .sort-select:focus {
-            border-color: #5cb85c;
-            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.2);
+          .sort-select:hover {
+            border-color: var(--primary);
           }
 
           @media (max-width: 768px) {
             .comments-header {
               flex-direction: column;
               align-items: flex-start;
+              gap: 1rem;
             }
 
             .sort-select {
@@ -144,8 +144,8 @@ const CommentContainer = props => {
     );
   } else {
     return (
-      <div className="col-xs-12 col-md-8 offset-md-2">
-        <p>
+      <div className="comment-container-wrapper">
+        <p className="auth-prompt">
           <Link to="/login">Sign in</Link>
           &nbsp;or&nbsp;
           <Link to="/register">sign up</Link>
@@ -155,9 +155,9 @@ const CommentContainer = props => {
         <div className="comments-section">
           <div className="comments-header">
             <h3>Comments ({props.comments.length})</h3>
-            <select 
+            <select
               className="sort-select"
-              value={sortBy} 
+              value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}>
               <option value="newest">Newest</option>
               <option value="upvoted">Most Upvoted</option>
@@ -173,60 +173,77 @@ const CommentContainer = props => {
         </div>
 
         <style>{`
-          .comments-section {
+          .comment-container-wrapper {
+            width: 100%;
+            max-width: 100%;
             margin-top: 2rem;
+          }
+
+          .auth-prompt {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+          }
+
+          .auth-prompt a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+          }
+
+          .auth-prompt a:hover {
+            text-decoration: underline;
+          }
+
+          .comments-section {
+            margin-top: 2.5rem;
           }
 
           .comments-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
           }
 
           .comments-header h3 {
             margin: 0;
-            color: #373a3c;
-            font-size: 1.25rem;
-          }
-
-          .dark-theme .comments-header h3 {
-            color: #e0e0e0;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            font-weight: 700;
           }
 
           .sort-select {
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-            color: #373a3c;
-            font-size: 0.9rem;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
+            min-width: 160px;
           }
 
           .sort-select:focus {
             outline: none;
-            border-color: #5cb85c;
-            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
           }
 
-          .dark-theme .sort-select {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            border-color: #333;
-          }
-
-          .dark-theme .sort-select:focus {
-            border-color: #5cb85c;
-            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.2);
+          .sort-select:hover {
+            border-color: var(--primary);
           }
 
           @media (max-width: 768px) {
             .comments-header {
               flex-direction: column;
               align-items: flex-start;
+              gap: 1rem;
             }
 
             .sort-select {

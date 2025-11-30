@@ -23,21 +23,21 @@ const FontSizeControl = () => {
     <div className="font-size-control">
       <div className="font-size-label">Text Size:</div>
       <div className="font-size-buttons">
-        <button 
+        <button
           className={`font-btn ${fontSize === 'small' ? 'active' : ''}`}
           onClick={() => handleFontSizeChange('small')}
           title="Small text"
         >
           A
         </button>
-        <button 
+        <button
           className={`font-btn ${fontSize === 'medium' ? 'active' : ''}`}
           onClick={() => handleFontSizeChange('medium')}
           title="Medium text"
         >
           A
         </button>
-        <button 
+        <button
           className={`font-btn ${fontSize === 'large' ? 'active' : ''}`}
           onClick={() => handleFontSizeChange('large')}
           title="Large text"
@@ -45,7 +45,7 @@ const FontSizeControl = () => {
           A
         </button>
       </div>
-      
+
       <style>{`
         .font-size-control {
           display: flex;
@@ -56,12 +56,8 @@ const FontSizeControl = () => {
 
         .font-size-label {
           font-size: 0.9rem;
-          color: #666;
+          color: var(--text-secondary);
           font-weight: 500;
-        }
-
-        .dark-theme .font-size-label {
-          color: #aaa;
         }
 
         .font-size-buttons {
@@ -72,8 +68,8 @@ const FontSizeControl = () => {
         .font-btn {
           width: 32px;
           height: 32px;
-          border: 1px solid #ddd;
-          background: white;
+          border: 1px solid var(--border-color);
+          background: var(--bg-card);
           border-radius: 4px;
           cursor: pointer;
           display: flex;
@@ -81,27 +77,22 @@ const FontSizeControl = () => {
           justify-content: center;
           font-weight: 600;
           transition: all 0.2s;
+          color: var(--text-main);
         }
 
         .font-btn:nth-child(1) { font-size: 12px; }
         .font-btn:nth-child(2) { font-size: 14px; }
         .font-btn:nth-child(3) { font-size: 16px; }
 
-        .dark-theme .font-btn {
-          background: #2a2a2a;
-          border-color: #444;
-          color: #e0e0e0;
-        }
-
         .font-btn:hover {
-          border-color: #5cb85c;
-          color: #5cb85c;
+          border-color: var(--primary);
+          color: var(--primary);
         }
 
         .font-btn.active {
-          background: #5cb85c;
-          color: white;
-          border-color: #5cb85c;
+          background: var(--primary);
+          color: var(--bg-body);
+          border-color: var(--primary);
         }
 
         /* Font size CSS variables */

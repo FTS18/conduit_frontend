@@ -14,10 +14,8 @@ import UserAvatar from './UserAvatar';
 const EditProfileSettings = props => {
   if (props.isUser) {
     return (
-      <Link
-        to="/settings"
-        className="btn btn-sm btn-outline-secondary action-btn">
-        <i className="ion-gear-a"></i> Edit Profile Settings
+      <Link to="/settings" className="profile-btn">
+        Edit Profile
       </Link>
     );
   }
@@ -27,13 +25,6 @@ const EditProfileSettings = props => {
 const FollowUserButton = props => {
   if (props.isUser) {
     return null;
-  }
-
-  let classes = 'btn btn-sm action-btn';
-  if (props.user.following) {
-    classes += ' btn-secondary';
-  } else {
-    classes += ' btn-outline-secondary';
   }
 
   const handleClick = ev => {
@@ -47,11 +38,9 @@ const FollowUserButton = props => {
 
   return (
     <button
-      className={classes}
+      className={`profile-btn ${props.user.following ? 'following' : ''}`}
       onClick={handleClick}>
-      <i className="ion-plus-round"></i>
-      &nbsp;
-      {props.user.following ? 'Unfollow' : 'Follow'} {props.user.username}
+      {props.user.following ? 'Unfollow' : 'Follow'}
     </button>
   );
 };
@@ -77,9 +66,49 @@ const mapDispatchToProps = dispatch => ({
 
 class Profile extends React.Component {
   componentWillMount() {
+    this.loadProfile();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.match.params.username !== nextProps.match.params.username ||
+      this.props.match.params.tab !== nextProps.match.params.tab) {
+      this.props.onUnload();
+      this.loadProfile(nextProps);
+    }
+  }
+
+  loadProfile(props = this.props) {
+    const tab = props.match.params.tab || 'articles';
+    let articlesPromise;
+
+    // Always fetch the total count of articles by this author
+    const countPromise = agent.Articles.byAuthor(props.match.params.username)
+      .then(res => res.articlesCount);
+
+    if (tab === 'liked') {
+      articlesPromise = agent.Articles.favoritedBy(props.match.params.username);
+    } else if (tab === 'comments') {
+      articlesPromise = agent.Comments.byAuthor(props.match.params.username)
+        .then(res => ({
+          articles: (res.comments || []).map(c => ({
+            slug: c.id,
+            title: c.body,
+            description: `On: ${c.article && c.article.title ? c.article.title : 'Unknown'}`,
+            author: c.author,
+            createdAt: c.createdAt,
+            favorited: false,
+            favoritesCount: 0
+          })),
+          articlesCount: res.comments ? res.comments.length : 0
+        }));
+    } else {
+      articlesPromise = agent.Articles.byAuthor(props.match.params.username);
+    }
+
     this.props.onLoad(Promise.all([
-      agent.Profile.get(this.props.match.params.username),
-      agent.Articles.byAuthor(this.props.match.params.username)
+      agent.Profile.get(props.match.params.username),
+      articlesPromise,
+      countPromise
     ]));
   }
 
@@ -87,29 +116,35 @@ class Profile extends React.Component {
     this.props.onUnload();
   }
 
+  getActiveTab() {
+    return this.props.match.params.tab || 'articles';
+  }
+
   renderTabs() {
+    const username = this.props.profile.username;
+    const activeTab = this.getActiveTab();
+    const isUser = this.props.currentUser && this.props.profile.username === this.props.currentUser.username;
+
     return (
-      <ul className="nav nav-pills outline-active">
-        <li className="nav-item">
+      <ul className="feed-toggle">
+        <li className="feed-tab">
           <Link
-            className="nav-link active"
-            to={`/@${encodeURIComponent(this.props.profile.username)}`}>
-            My Articles
+            className={activeTab === 'articles' ? 'feed-tab-link active' : 'feed-tab-link'}
+            to={`/@${encodeURIComponent(username)}`}>
+            {isUser ? 'My Articles' : 'Articles'}
           </Link>
         </li>
-
-        <li className="nav-item">
+        <li className="feed-tab">
           <Link
-            className="nav-link"
-            to={`/@${encodeURIComponent(this.props.profile.username)}/favorites`}>
-            Favorited Articles
+            className={activeTab === 'liked' ? 'feed-tab-link active' : 'feed-tab-link'}
+            to={`/@${encodeURIComponent(username)}/liked`}>
+            Liked
           </Link>
         </li>
-
-        <li className="nav-item">
+        <li className="feed-tab">
           <Link
-            className="nav-link"
-            to={`/@${encodeURIComponent(this.props.profile.username)}/comments`}>
+            className={activeTab === 'comments' ? 'feed-tab-link active' : 'feed-tab-link'}
+            to={`/@${encodeURIComponent(username)}/comments`}>
             Comments
           </Link>
         </li>
@@ -128,150 +163,280 @@ class Profile extends React.Component {
 
     return (
       <div className="profile-page">
-
-        <div className="user-info">
-          <div className="container">
-            <div className="row">
-              <div className="col-xs-12 col-md-10 offset-md-1">
-
-                <div className="profile-avatar">
-                  <UserAvatar username={profile.username} image={profile.image} size="lg" />
-                </div>
-                <h4>{profile.username}</h4>
-                <p>{profile.bio}</p>
-
-                <div className="profile-actions">
-                  <EditProfileSettings isUser={isUser} />
-                  <FollowUserButton
-                    isUser={isUser}
-                    user={profile}
-                    follow={this.props.onFollow}
-                    unfollow={this.props.onUnfollow}
-                    />
-                </div>
-
-              </div>
+        <div className="profile-card">
+          <div className="profile-header">
+            <UserAvatar username={profile.username} image={profile.image} size="lg" />
+            <div className="profile-info">
+              <h2>{(profile.username || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
+              <p>{profile.bio}</p>
             </div>
+          </div>
+
+          <div className="profile-stats">
+            <div className="stat">
+              <div className="stat-value">{profile.totalArticlesCount || 0}</div>
+              <div className="stat-label">Articles</div>
+            </div>
+            <div className="stat">
+              <div className="stat-value">{profile.followersCount || 0}</div>
+              <div className="stat-label">Followers</div>
+            </div>
+            <div className="stat">
+              <div className="stat-value">{profile.followingCount || 0}</div>
+              <div className="stat-label">Following</div>
+            </div>
+          </div>
+
+          <div className="profile-actions">
+            <EditProfileSettings isUser={isUser} />
+            <FollowUserButton
+              isUser={isUser}
+              user={profile}
+              follow={this.props.onFollow}
+              unfollow={this.props.onUnfollow}
+            />
           </div>
         </div>
 
-        <div className="container">
-          <div className="row">
-
-            <div className="col-xs-12 col-md-10 offset-md-1">
-
-              <div className="articles-toggle">
-                {this.renderTabs()}
-              </div>
-
-              <ArticleList
-                pager={this.props.pager}
-                articles={this.props.articles}
-                articlesCount={this.props.articlesCount}
-                state={this.props.currentPage} />
-            </div>
-
+        <div className="profile-articles">
+          <div className="articles-toggle">
+            {this.renderTabs()}
           </div>
+
+          <ArticleList
+            pager={this.props.pager}
+            articles={this.props.articles}
+            articlesCount={this.props.articlesCount}
+            state={this.props.currentPage} />
         </div>
 
         <style>{`
           .profile-page {
-            background: #f8f9fa;
+            background: var(--bg-body);
             min-height: 100vh;
+            padding: 1.5rem;
           }
 
-          .dark-theme .profile-page {
-            background: #0d0d0d;
+          .profile-card {
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
           }
 
-          .user-info {
-            background: white;
-            padding: 2rem 0;
-            border-bottom: 1px solid #e1e4e8;
-          }
-
-          .dark-theme .user-info {
-            background: #1a1a1a;
-            border-bottom-color: #333;
-          }
-
-          .profile-avatar {
+          .profile-header {
             display: flex;
-            justify-content: center;
-            margin-bottom: 1.5rem;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            align-items: flex-start;
           }
 
-          .user-info h4 {
+          .profile-info {
+            flex: 1;
+          }
+
+          .profile-info h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-main);
+          }
+
+          .profile-info p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+          }
+
+          .profile-stats {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+          }
+
+          .stat {
             text-align: center;
+            flex: 1;
+          }
+
+          .stat-value {
             font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #373a3c;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
           }
 
-          .dark-theme .user-info h4 {
-            color: #e0e0e0;
-          }
-
-          .user-info p {
-            text-align: center;
-            color: #666;
-            margin-bottom: 1.5rem;
-          }
-
-          .dark-theme .user-info p {
-            color: #aaa;
+          .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
           }
 
           .profile-actions {
             display: flex;
             gap: 0.75rem;
-            justify-content: center;
-            flex-wrap: wrap;
           }
 
-          .profile-actions .action-btn {
-            min-height: 44px;
+          .profile-btn {
+            flex: 1;
             padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
             font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+          }
+
+          .profile-btn:hover {
+            background: var(--primary-hover);
+          }
+
+          .profile-btn.following {
+            background: var(--bg-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+          }
+
+          .profile-btn.following:hover {
+            background: var(--border-color);
+          }
+
+          .profile-articles {
+            max-width: 700px;
+            margin: 0 auto;
+          }
+
+          .articles-toggle {
+            margin-bottom: 1.5rem;
+          }
+
+          .feed-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.5rem;
+            margin: 0;
+            list-style: none;
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+          }
+
+          .feed-toggle::-webkit-scrollbar {
+            display: none;
+          }
+
+          .feed-tab {
+            flex: 1;
+            min-width: 100px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+          }
+
+          .feed-tab-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            text-align: center;
+            background: transparent;
+            text-decoration: none;
+            cursor: pointer;
+          }
+
+          .feed-tab-link:hover {
+            background: var(--bg-hover);
+            color: var(--primary);
+          }
+
+          .feed-tab-link.active {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
           }
 
           @media (max-width: 768px) {
-            .user-info {
-              padding: 1.5rem 0;
+            .profile-page {
+              padding: 0.5rem;
             }
 
-            .profile-avatar {
-              margin-bottom: 1rem;
+            .profile-card {
+              padding: 1.25rem;
+              margin-bottom: 1.5rem;
+              border-radius: 8px;
             }
 
-            .user-info h4 {
+            .profile-header {
+              gap: 1rem;
+              margin-bottom: 1.5rem;
+            }
+
+            .profile-info h2 {
+              font-size: 1.3rem;
+            }
+
+            .profile-info p {
+              font-size: 0.9rem;
+            }
+
+            .profile-stats {
+              gap: 1rem;
+              margin-bottom: 1.5rem;
+              padding: 1rem 0;
+            }
+
+            .stat-value {
               font-size: 1.25rem;
+            }
+
+            .stat-label {
+              font-size: 0.8rem;
             }
 
             .profile-actions {
               gap: 0.5rem;
             }
 
-            .profile-actions .action-btn {
-              flex: 1;
-              min-width: 120px;
+            .profile-btn {
               padding: 0.65rem 1rem;
               font-size: 0.85rem;
             }
 
-            .articles-toggle {
-              margin-bottom: 1.5rem;
+            .feed-toggle {
+              padding: 0.4rem;
+              gap: 0.3rem;
             }
 
-            .col-md-10 {
-              width: 100% !important;
-              margin-left: 0 !important;
-              padding: 0 1rem;
+            .feed-tab {
+              min-width: 80px;
+            }
+
+            .feed-tab-link {
+              padding: 0.65rem 0.75rem;
+              font-size: 0.85rem;
             }
           }
         `}</style>
-
       </div>
     );
   }

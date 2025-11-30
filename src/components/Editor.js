@@ -11,11 +11,11 @@ import {
   UPDATE_FIELD_EDITOR
 } from '../constants/actionTypes';
 
-const mapStateToProps = state => ({
+const mapStateToProps = state => (({
   ...state.editor
-});
+}));
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = dispatch => (({
   onAddTag: () =>
     dispatch({ type: ADD_TAG }),
   onLoad: payload =>
@@ -28,7 +28,7 @@ const mapDispatchToProps = dispatch => ({
     dispatch({ type: EDITOR_PAGE_UNLOADED }),
   onUpdateField: (key, value) =>
     dispatch({ type: UPDATE_FIELD_EDITOR, key, value })
-});
+}));
 
 class Editor extends React.Component {
   constructor() {
@@ -94,202 +94,185 @@ class Editor extends React.Component {
   render() {
     return (
       <div className="editor-page">
-        <div className="container page">
-          <div className="row">
-            <div className="col-md-10 offset-md-1 col-xs-12">
+        <div className="editor-main">
+          <ListErrors errors={this.props.errors}></ListErrors>
 
-              <ListErrors errors={this.props.errors}></ListErrors>
+          <form>
+            <fieldset>
 
-              <form>
-                <fieldset>
+              <fieldset className="form-group">
+                <input
+                  className="form-control form-control-lg"
+                  type="text"
+                  placeholder="Article Title"
+                  value={this.props.title}
+                  onChange={this.changeTitle} />
+              </fieldset>
 
-                  <fieldset className="form-group">
-                    <input
-                      className="form-control form-control-lg"
-                      type="text"
-                      placeholder="Article Title"
-                      value={this.props.title}
-                      onChange={this.changeTitle} />
-                  </fieldset>
+              <fieldset className="form-group">
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder="What's this article about?"
+                  value={this.props.description}
+                  onChange={this.changeDescription} />
+              </fieldset>
 
-                  <fieldset className="form-group">
-                    <input
-                      className="form-control"
-                      type="text"
-                      placeholder="What's this article about?"
-                      value={this.props.description}
-                      onChange={this.changeDescription} />
-                  </fieldset>
+              <fieldset className="form-group">
+                <textarea
+                  className="form-control"
+                  rows="8"
+                  placeholder="Write your article (in markdown)"
+                  value={this.props.body}
+                  onChange={this.changeBody}>
+                </textarea>
+              </fieldset>
 
-                  <fieldset className="form-group">
-                    <textarea
-                      className="form-control"
-                      rows="8"
-                      placeholder="Write your article (in markdown)"
-                      value={this.props.body}
-                      onChange={this.changeBody}>
-                    </textarea>
-                  </fieldset>
+              <fieldset className="form-group">
+                <input
+                  className="form-control"
+                  type="text"
+                  placeholder="Enter tags"
+                  value={this.props.tagInput}
+                  onChange={this.changeTagInput}
+                  onKeyUp={this.watchForEnter} />
 
-                  <fieldset className="form-group">
-                    <input
-                      className="form-control"
-                      type="text"
-                      placeholder="Enter tags"
-                      value={this.props.tagInput}
-                      onChange={this.changeTagInput}
-                      onKeyUp={this.watchForEnter} />
+                <div className="tag-list">
+                  {(this.props.tagList || []).map(tag => {
+                    return (
+                      <span className="tag-default tag-pill" key={tag}>
+                        <i className="ion-close-round"
+                          onClick={this.removeTagHandler(tag)}>
+                        </i>
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
+              </fieldset>
 
-                    <div className="tag-list">
-                      {
-                        (this.props.tagList || []).map(tag => {
-                          return (
-                            <span className="tag-default tag-pill" key={tag}>
-                              <i  className="ion-close-round"
-                                  onClick={this.removeTagHandler(tag)}>
-                              </i>
-                              {tag}
-                            </span>
-                          );
-                        })
-                      }
-                    </div>
-                  </fieldset>
+              <button
+                className="btn btn-lg pull-xs-right btn-primary"
+                type="button"
+                disabled={this.props.inProgress}
+                onClick={this.submitForm}>
+                Publish Article
+              </button>
 
-                  <button
-                    className="btn btn-lg pull-xs-right btn-primary"
-                    type="button"
-                    disabled={this.props.inProgress}
-                    onClick={this.submitForm}>
-                    Publish Article
-                  </button>
-
-                </fieldset>
-              </form>
-
-            </div>
-          </div>
+            </fieldset>
+          </form>
         </div>
 
         <style>{`
           .editor-page {
-            background: #f8f9fa;
+            background: var(--bg-body);
             min-height: 100vh;
-            padding: 2rem 0;
+            padding-top: 56px;
           }
 
-          .dark-theme .editor-page {
-            background: #0d0d0d;
+          .editor-main {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
           }
 
-          .editor-page .form-control {
-            border: 1px solid #ddd;
-            border-radius: 4px;
+          .editor-main .form-control {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             padding: 0.75rem;
             font-size: 1rem;
-            color: #373a3c;
-            background: white;
+            color: var(--text-secondary);
+            background: var(--bg-hover);
             transition: border-color 0.2s;
           }
 
-          .editor-page .form-control:focus {
-            border-color: #5cb85c;
+          .editor-main .form-control:focus {
+            border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.1);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
           }
 
-          .dark-theme .editor-page .form-control {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            border-color: #333;
-          }
-
-          .dark-theme .editor-page .form-control:focus {
-            border-color: #5cb85c;
-            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.2);
-          }
-
-          .editor-page .form-control-lg {
+          .editor-main .form-control-lg {
             font-size: 1.5rem;
             padding: 1rem;
           }
 
-          .editor-page textarea.form-control {
+          .editor-main textarea.form-control {
             resize: vertical;
             min-height: 200px;
           }
 
-          .editor-page .form-group {
+          .editor-main .form-group {
             margin-bottom: 1.5rem;
           }
 
-          .editor-page .tag-list {
+          .editor-main .tag-list {
             margin-top: 1rem;
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
           }
 
-          .editor-page .tag-pill {
+          .editor-main .tag-pill {
             display: inline-block;
             padding: 0.5rem 0.75rem;
-            background: #818a8f;
-            color: white;
-            border-radius: 16px;
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+            border-radius: 20px;
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s;
+            border: 1px solid var(--border-color);
           }
 
-          .editor-page .tag-pill:hover {
-            background: #5cb85c;
+          .editor-main .tag-pill:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
           }
 
-          .editor-page .tag-pill i {
+          .editor-main .tag-pill i {
             margin-right: 0.5rem;
             cursor: pointer;
           }
 
-          .dark-theme .editor-page .tag-pill {
-            background: #555;
-          }
-
-          .dark-theme .editor-page .tag-pill:hover {
-            background: #5cb85c;
-          }
-
-          .editor-page .btn {
+          .editor-main .btn {
             min-height: 44px;
             font-size: 1rem;
             padding: 0.75rem 1.5rem;
+            border-radius: 6px;
           }
 
           @media (max-width: 768px) {
             .editor-page {
-              padding: 1rem 0;
+              padding-top: 56px;
             }
 
-            .col-md-10 {
-              width: 100% !important;
-              margin-left: 0 !important;
-              padding: 0 1rem;
+            .editor-main {
+              margin: 0.5rem;
+              padding: 1rem;
+              border-radius: 6px;
             }
 
-            .editor-page .form-control {
+            .editor-main .form-control {
               font-size: 16px;
               padding: 0.85rem;
             }
 
-            .editor-page .form-control-lg {
+            .editor-main .form-control-lg {
               font-size: 1.25rem;
               padding: 0.85rem;
             }
 
-            .editor-page textarea.form-control {
+            .editor-main textarea.form-control {
               min-height: 150px;
             }
 
-            .editor-page .btn {
+            .editor-main .btn {
               width: 100%;
               margin-top: 1rem;
             }

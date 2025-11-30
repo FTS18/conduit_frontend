@@ -92,24 +92,16 @@ class Login extends React.Component {
 
         <style>{`
           .auth-page {
-            background: #f8f9fa;
+            background: var(--bg-body);
             min-height: 100vh;
             padding: 2rem 0;
-          }
-
-          .dark-theme .auth-page {
-            background: #0d0d0d;
           }
 
           .auth-page h1 {
             text-align: center;
             margin-bottom: 1rem;
-            color: #373a3c;
+            color: var(--text-main);
             font-size: 2rem;
-          }
-
-          .dark-theme .auth-page h1 {
-            color: #e0e0e0;
           }
 
           .auth-page p {
@@ -118,8 +110,9 @@ class Login extends React.Component {
           }
 
           .auth-page a {
-            color: #5cb85c;
+            color: var(--primary);
             text-decoration: none;
+            font-weight: 600;
           }
 
           .auth-page a:hover {
@@ -131,30 +124,19 @@ class Login extends React.Component {
           }
 
           .auth-page .form-control {
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 0;
             padding: 0.75rem;
             font-size: 1rem;
-            color: #373a3c;
-            background: white;
+            color: var(--text-main);
+            background: var(--bg-card);
             transition: border-color 0.2s;
           }
 
           .auth-page .form-control:focus {
-            border-color: #5cb85c;
+            border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.1);
-          }
-
-          .dark-theme .auth-page .form-control {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            border-color: #333;
-          }
-
-          .dark-theme .auth-page .form-control:focus {
-            border-color: #5cb85c;
-            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.2);
+            box-shadow: none;
           }
 
           .auth-page .form-control-lg {
@@ -166,6 +148,7 @@ class Login extends React.Component {
             min-height: 44px;
             padding: 0.75rem 1.5rem;
             font-size: 1rem;
+            border-radius: 0;
           }
 
           @media (max-width: 768px) {

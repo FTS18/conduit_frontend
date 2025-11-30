@@ -49,9 +49,9 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
                   title="Upvote"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M7 14l5-5 5 5"/>
+                    <path d="M7 14l5-5 5 5" />
                   </svg>
-                  {comment.upvotes || 0}
+                  <span>{comment.upvotes || 0}</span>
                 </button>
                 <button
                   className={`vote-btn downvote ${comment.userVote === -1 ? 'active' : ''}`}
@@ -60,9 +60,9 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
                   title="Downvote"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17 10l-5 5-5-5"/>
+                    <path d="M17 10l-5 5-5-5" />
                   </svg>
-                  {comment.downvotes || 0}
+                  <span>{comment.downvotes || 0}</span>
                 </button>
               </React.Fragment>
             )}
@@ -114,30 +114,31 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
         }
 
         .comment {
-          background: white;
-          border: 1px solid #e1e4e8;
-          border-radius: 4px;
-          padding: 1rem;
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 8px;
+          padding: 1.25rem;
           margin-bottom: 0.5rem;
+          transition: all 0.2s;
         }
 
-        .dark-theme .comment {
-          background: #1a1a1a;
-          border-color: #333;
+        .comment:hover {
+          border-color: var(--border-hover);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .comment-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 0.75rem;
+          margin-bottom: 1rem;
           gap: 1rem;
         }
 
         .comment-author {
           display: flex;
-          align-items: center;
           gap: 0.75rem;
+          align-items: flex-start;
           flex: 1;
         }
 
@@ -149,17 +150,13 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
 
         .author-name {
           font-weight: 600;
-          color: #373a3c;
+          color: var(--text-main);
           font-size: 0.95rem;
         }
 
-        .dark-theme .author-name {
-          color: #e0e0e0;
-        }
-
         .comment-date {
-          font-size: 0.8rem;
-          color: #999;
+          font-size: 0.85rem;
+          color: var(--text-secondary);
         }
 
         .comment-actions {
@@ -170,118 +167,94 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
         }
 
         .vote-btn, .reply-btn, .delete-btn {
-          padding: 0.4rem 0.8rem;
-          border: 1px solid #ddd;
-          background: white;
-          border-radius: 3px;
+          padding: 0.5rem 0.8rem;
+          border: 1px solid var(--border-color);
+          background: transparent;
+          border-radius: 6px;
           cursor: pointer;
           font-size: 0.85rem;
           transition: all 0.2s;
           display: flex;
           align-items: center;
           gap: 0.4rem;
+          color: var(--text-secondary);
+          font-weight: 500;
         }
 
-        .dark-theme .vote-btn,
-        .dark-theme .reply-btn,
-        .dark-theme .delete-btn {
-          background: #2a2a2a;
-          border-color: #444;
-          color: #e0e0e0;
-        }
-
-        .vote-btn:hover {
-          border-color: #5cb85c;
-          color: #5cb85c;
+        .vote-btn:hover, .reply-btn:hover {
+          border-color: var(--primary);
+          color: var(--primary);
+          background: rgba(0, 102, 204, 0.05);
         }
 
         .vote-btn.active.upvote {
-          background: #5cb85c;
+          background: var(--primary);
           color: white;
-          border-color: #5cb85c;
+          border-color: var(--primary);
         }
 
         .vote-btn.active.downvote {
-          background: #e74c3c;
+          background: #ff4444;
           color: white;
-          border-color: #e74c3c;
-        }
-
-        .vote-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .reply-btn:hover {
-          border-color: #0275d8;
-          color: #0275d8;
+          border-color: #ff4444;
         }
 
         .delete-btn:hover {
-          border-color: #e74c3c;
-          color: #e74c3c;
+          border-color: #ff4444;
+          color: #ff4444;
+          background: rgba(255, 68, 68, 0.05);
         }
 
         .comment-body {
-          color: #373a3c;
-          line-height: 1.5;
+          color: var(--text-main);
+          line-height: 1.6;
           word-wrap: break-word;
-        }
-
-        .dark-theme .comment-body {
-          color: #e0e0e0;
+          font-size: 0.95rem;
         }
 
         .replies-section {
-          margin-left: 3rem;
+          margin-left: 2.5rem;
           margin-top: 1rem;
-          border-left: 3px solid #e1e4e8;
+          border-left: 3px solid var(--border-color);
           padding-left: 1.5rem;
           position: relative;
-        }
-
-        .replies-section::before {
-          content: '';
-          position: absolute;
-          left: -3px;
-          top: 0;
-          bottom: 0;
-          width: 3px;
-          background: linear-gradient(to bottom, #5cb85c, transparent);
-        }
-
-        .dark-theme .replies-section {
-          border-left-color: #333;
         }
 
         .show-replies-btn {
           background: none;
           border: none;
-          color: #5cb85c;
+          color: var(--text-secondary);
           cursor: pointer;
           font-size: 0.9rem;
           padding: 0;
           margin-bottom: 0.75rem;
           transition: color 0.2s;
+          font-weight: 500;
         }
 
         .show-replies-btn:hover {
-          color: #6cc76c;
-        }
-
-        .replies-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
+          color: var(--primary);
         }
 
         @media (max-width: 768px) {
+          .comment {
+            padding: 1rem;
+            border-radius: 6px;
+          }
+
           .comment-header {
             flex-direction: column;
+            gap: 0.75rem;
           }
 
           .comment-actions {
             justify-content: flex-start;
+            width: 100%;
+          }
+
+          .vote-btn, .reply-btn, .delete-btn {
+            padding: 0.4rem 0.7rem;
+            font-size: 0.8rem;
           }
 
           .replies-section {

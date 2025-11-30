@@ -8,13 +8,15 @@ import UserAvatar from './UserAvatar';
 import OfflineButton from './OfflineButton';
 
 const mapDispatchToProps = dispatch => ({
-  favorite: slug => dispatch({
+  favorite: (slug, optimistic) => dispatch({
     type: ARTICLE_FAVORITED,
-    payload: agent.Articles.favorite(slug)
+    payload: agent.Articles.favorite(slug),
+    optimistic: optimistic
   }),
-  unfavorite: slug => dispatch({
+  unfavorite: (slug, optimistic) => dispatch({
     type: ARTICLE_UNFAVORITED,
-    payload: agent.Articles.unfavorite(slug)
+    payload: agent.Articles.unfavorite(slug),
+    optimistic: optimistic
   }),
   onTagClick: (tag, pager, payload) =>
     dispatch({ type: APPLY_TAG_FILTER, tag, pager, payload })
@@ -38,17 +40,28 @@ const ArticlePreview = props => {
 
   const handleClick = ev => {
     ev.preventDefault();
-    if (article.favorited) {
-      props.unfavorite(article.slug);
+    const newFavorited = !article.favorited;
+    const optimisticPayload = {
+      type: newFavorited ? ARTICLE_FAVORITED : ARTICLE_UNFAVORITED,
+      payload: {
+        article: {
+          ...article,
+          favorited: newFavorited,
+          favoritesCount: article.favoritesCount + (newFavorited ? 1 : -1)
+        }
+      }
+    };
+    if (newFavorited) {
+      props.favorite(article.slug, optimisticPayload);
     } else {
-      props.favorite(article.slug);
+      props.unfavorite(article.slug, optimisticPayload);
     }
   };
 
   const handleShare = () => {
     const url = `${window.location.origin}/#/article/${article.slug}`;
     navigator.clipboard.writeText(url);
-    
+
     if (navigator.share) {
       navigator.share({
         title: article.title,
@@ -83,16 +96,18 @@ const ArticlePreview = props => {
         </div>
       </Link>
 
-      <div className="article-tags">
-        <span className="tags-label">Tags:</span>
-        <ul className="tag-list">
-          {article.tagList.map(tag => (
-            <li className="tag-hash" key={tag}>
-              <button className="tag-link" onClick={(ev) => handleTagClick(ev, tag)}>{tag}</button>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {article.tagList && article.tagList.length > 0 && (
+        <div className="article-tags">
+          <span className="tags-label">Tags:</span>
+          <ul className="tag-list">
+            {article.tagList.map(tag => (
+              <li className="tag-hash" key={tag}>
+                <button className="tag-link" onClick={(ev) => handleTagClick(ev, tag)}>{tag}</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="article-bottom-section">
         <div className="article-author-section">
@@ -111,7 +126,7 @@ const ArticlePreview = props => {
         <div className="article-actions-bottom">
           <button className={favoriteButtonClass} onClick={handleClick}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill={article.favorited ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
             {article.favoritesCount}
           </button>
@@ -123,7 +138,7 @@ const ArticlePreview = props => {
       <div className="article-actions-mobile">
         <button className={favoriteButtonClass} onClick={handleClick}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill={article.favorited ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
           {article.favoritesCount}
         </button>
@@ -135,28 +150,19 @@ const ArticlePreview = props => {
 
       <style>{`
         .article-preview {
-          background: white;
-          border: none;
-          border-radius: 0;
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 8px;
           padding: 1.5rem;
           margin-bottom: 1.5rem;
-          transition: all 0.3s ease;
-          border-left: 4px solid #5cb85c;
-          position: relative;
+          transition: all 0.2s ease;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .article-preview:hover {
-          box-shadow: 0 4px 12px rgba(92, 184, 92, 0.15);
-          transform: translateX(4px);
-        }
-
-        .dark-theme .article-preview {
-          background: #1a1a1a;
-          border-left-color: #5cb85c;
-        }
-
-        .dark-theme .article-preview:hover {
-          box-shadow: 0 4px 12px rgba(92, 184, 92, 0.25);
+          box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+          border-color: var(--primary);
         }
 
         .article-header {
@@ -184,11 +190,7 @@ const ArticlePreview = props => {
           justify-content: space-between;
           margin-top: 1rem;
           padding-top: 1rem;
-          border-top: 1px solid #e1e4e8;
-        }
-
-        .dark-theme .article-bottom-section {
-          border-top-color: #333;
+          border-top: 1px solid var(--border-color);
         }
 
         .article-author-section {
@@ -210,30 +212,22 @@ const ArticlePreview = props => {
         }
 
         .author-name {
-          color: #5cb85c;
-          text-decoration: none;
+          color: var(--primary);
+          text-decoration: none !important;
           font-weight: 600;
-          font-size: 0.95rem;
+          font-size: calc(0.95rem * var(--font-scale));
           transition: color 0.2s;
         }
 
         .author-name:hover {
-          color: #6cc76c;
+          color: var(--primary-hover);
           text-decoration: none !important;
         }
 
-        .dark-theme .author-name {
-          color: #5cb85c;
-        }
-
         .article-date {
-          color: #999;
-          font-size: 0.85rem;
+          color: var(--text-secondary);
+          font-size: calc(0.85rem * var(--font-scale));
           margin-top: 0.25rem;
-        }
-
-        .dark-theme .article-date {
-          color: #888;
         }
 
         .article-actions-bottom {
@@ -255,44 +249,29 @@ const ArticlePreview = props => {
         }
 
         .article-title {
-          font-size: 1.4rem;
+          font-size: calc(1.5rem * var(--font-scale));
           font-weight: 700;
-          margin: 0;
-          color: #373a3c;
-          line-height: 1.4;
-          transition: all 0.2s;
-          text-decoration: none;
-          cursor: pointer;
+          margin: 0 0 1rem 0;
+          color: var(--text-main);
+          line-height: 1.3;
+          text-decoration: none !important;
         }
 
         .article-title:hover {
-          color: #5cb85c;
-          text-decoration: underline;
-        }
-
-        .dark-theme .article-title {
-          color: #e0e0e0;
-        }
-
-        .dark-theme .article-title:hover {
-          color: #5cb85c;
-          text-decoration: underline;
+          color: var(--primary);
+          text-decoration: none !important;
         }
 
         .recommended-label {
-          color: #7cb342;
-          font-size: 0.85rem;
+          color: var(--primary);
+          font-size: calc(0.85rem * var(--font-scale));
           font-weight: 600;
           white-space: nowrap;
         }
 
-        .dark-theme .recommended-label {
-          color: #9ccc65;
-        }
-
         .article-description {
-          color: #666;
-          font-size: 1rem;
+          color: var(--text-secondary);
+          font-size: calc(1rem * var(--font-scale));
           margin: 0 0 1rem 0;
           line-height: 1.6;
           display: -webkit-box;
@@ -300,10 +279,6 @@ const ArticlePreview = props => {
           -webkit-box-orient: vertical;
           overflow: hidden;
           text-decoration: none;
-        }
-
-        .dark-theme .article-description {
-          color: #aaa;
         }
 
         .article-footer {
@@ -314,8 +289,8 @@ const ArticlePreview = props => {
         }
 
         .read-more {
-          color: #5cb85c;
-          font-size: 0.9rem;
+          color: var(--primary);
+          font-size: calc(0.9rem * var(--font-scale));
           font-weight: 500;
           white-space: nowrap;
           text-decoration: none;
@@ -330,13 +305,9 @@ const ArticlePreview = props => {
         }
 
         .tags-label {
-          color: #666;
-          font-size: 0.9rem;
+          color: var(--text-secondary);
+          font-size: calc(0.9rem * var(--font-scale));
           font-weight: 600;
-        }
-
-        .dark-theme .tags-label {
-          color: #aaa;
         }
 
         .tag-list {
@@ -354,8 +325,8 @@ const ArticlePreview = props => {
         }
 
         .tag-link {
-          color: #5cb85c;
-          font-size: 0.85rem;
+          color: var(--primary);
+          font-size: calc(0.85rem * var(--font-scale));
           font-weight: 500;
           text-decoration: none;
           cursor: pointer;
@@ -366,19 +337,9 @@ const ArticlePreview = props => {
         }
 
         .tag-link:hover {
-          color: #6cc76c;
+          color: var(--primary-hover);
           text-decoration: underline;
         }
-
-        .dark-theme .tag-link {
-          color: #5cb85c;
-        }
-
-        .dark-theme .tag-link:hover {
-          color: #6cc76c;
-        }
-
-
 
         .btn-pill {
           display: inline-flex;
@@ -387,7 +348,7 @@ const ArticlePreview = props => {
           padding: 0.5rem 1.2rem;
           border: none;
           border-radius: 20px;
-          font-size: 0.9rem;
+          font-size: calc(0.9rem * var(--font-scale));
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
@@ -396,64 +357,39 @@ const ArticlePreview = props => {
         }
 
         .btn-pill-primary {
-          background: #5cb85c;
+          background: var(--primary);
           color: white;
         }
 
         .btn-pill-primary:hover {
-          background: #6cc76c;
+          background: var(--primary-hover);
           text-decoration: none;
         }
 
         .btn-pill-outline {
-          background: #f5f5f5;
-          color: #5cb85c;
-          border: 1.5px solid #5cb85c;
+          background: var(--bg-hover);
+          color: var(--primary);
+          border: 1.5px solid var(--primary);
         }
 
         .btn-pill-outline:hover {
-          background: #f0f8f0;
+          background: rgba(0, 102, 204, 0.1);
           text-decoration: none;
         }
 
-        .dark-theme .btn-pill-primary {
-          background: #5cb85c;
-          color: white;
-        }
-
-        .dark-theme .btn-pill-primary:hover {
-          background: #6cc76c;
-        }
-
-        .dark-theme .btn-pill-outline {
-          background: #222;
-          color: #5cb85c;
-          border: 1.5px solid #5cb85c;
-        }
-
-        .dark-theme .btn-pill-outline:hover {
-          background: rgba(92, 184, 92, 0.1);
-        }
-
-        @media (max-width: 768px) {
+        @media (max-width: 480px) {
           .article-preview {
-            padding: 1.25rem;
-            margin: 0 0.75rem 1rem 0.75rem;
-            border-left: none;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            background: white;
-            border: 1px solid #f0f0f0;
-          }
-
-          .dark-theme .article-preview {
-            background: #1a1a1a;
-            border-color: #333;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            padding: 1rem !important;
+            margin: 0.5rem 0 !important;
+            border-radius: 16px !important;
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-color) !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
           }
 
           .article-preview:hover {
-            box-shadow: 0 6px 16px rgba(92, 184, 92, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
             transform: translateY(-2px);
           }
 
@@ -472,14 +408,14 @@ const ArticlePreview = props => {
           }
 
           .article-title {
-            font-size: 1.2rem;
+            font-size: calc(1.2rem * var(--font-scale));
             margin-bottom: 0;
             line-height: 1.3;
             font-weight: 700;
           }
 
           .recommended-label {
-            font-size: 0.75rem;
+            font-size: calc(0.75rem * var(--font-scale));
           }
 
           .share-btn-top {
@@ -487,15 +423,11 @@ const ArticlePreview = props => {
           }
 
           .article-description {
-            font-size: 0.95rem;
+            font-size: calc(0.95rem * var(--font-scale));
             margin-bottom: 1rem;
             line-height: 1.6;
             -webkit-line-clamp: 3;
-            color: #555;
-          }
-
-          .dark-theme .article-description {
-            color: #bbb;
+            color: var(--text-secondary);
           }
 
           .article-footer {
@@ -511,7 +443,7 @@ const ArticlePreview = props => {
           }
 
           .tags-label {
-            font-size: 0.85rem;
+            font-size: calc(0.85rem * var(--font-scale));
           }
 
           .tag-list {
@@ -519,11 +451,9 @@ const ArticlePreview = props => {
           }
 
           .tag-hash {
-            font-size: 0.75rem;
+            font-size: calc(0.75rem * var(--font-scale));
             padding: 0.2rem 0.4rem;
           }
-
-
 
           .article-bottom-section {
             flex-direction: column;
@@ -537,21 +467,17 @@ const ArticlePreview = props => {
 
           .article-actions-mobile {
             display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e1e4e8;
-          }
-
-          .dark-theme .article-actions-mobile {
-            border-top-color: #333;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border-color);
           }
 
           .article-actions-mobile button {
             flex: 1;
-            padding: 0.75rem 1rem !important;
-            font-size: 0.85rem;
+            padding: 1rem 1.25rem !important;
             min-height: 48px;
+            font-size: calc(0.85rem * var(--font-scale));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -561,12 +487,12 @@ const ArticlePreview = props => {
           }
 
           .article-actions-mobile .btn-pill-primary {
-            background: linear-gradient(135deg, #5cb85c, #4a9d4a) !important;
+            background: var(--primary) !important;
           }
 
           .article-actions-mobile .btn-pill-outline {
-            background: rgba(92, 184, 92, 0.1) !important;
-            border: 2px solid #5cb85c !important;
+            background: var(--bg-hover) !important;
+            border: 2px solid var(--primary) !important;
           }
         }
       `}</style>

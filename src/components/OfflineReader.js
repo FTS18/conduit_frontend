@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+
 import UserAvatar from './UserAvatar';
 
 const OfflineReader = () => {
@@ -25,17 +25,7 @@ const OfflineReader = () => {
     };
   }, []);
 
-  const saveForOffline = (article) => {
-    const offlineArticle = {
-      ...article,
-      savedAt: new Date().toISOString(),
-      id: article.slug
-    };
-    
-    const updated = [...offlineArticles, offlineArticle];
-    setOfflineArticles(updated);
-    localStorage.setItem('offlineArticles', JSON.stringify(updated));
-  };
+
 
   const removeFromOffline = (slug) => {
     const updated = offlineArticles.filter(article => article.slug !== slug);
@@ -43,15 +33,17 @@ const OfflineReader = () => {
     localStorage.setItem('offlineArticles', JSON.stringify(updated));
   };
 
-  const isArticleSaved = (slug) => {
-    return offlineArticles.some(article => article.slug === slug);
-  };
+
 
   if (!isOnline && offlineArticles.length === 0) {
     return (
       <div className="offline-reader">
         <div className="offline-message">
-          <div className="offline-icon">📱</div>
+          <div className="offline-icon">
+            <span role="img" aria-label="mobile">
+              📱
+            </span>
+          </div>
           <h3>You're offline</h3>
           <p>No articles saved for offline reading. Save articles when online to read them later.</p>
         </div>
@@ -69,13 +61,13 @@ const OfflineReader = () => {
             Offline Mode - {offlineArticles.length} articles available
           </div>
         </div>
-        
+
         <div className="offline-articles">
           {offlineArticles.map(article => (
             <div key={article.slug} className="offline-article">
               <div className="article-header">
                 <h3 className="article-title">{article.title}</h3>
-                <button 
+                <button
                   className="remove-btn"
                   onClick={() => removeFromOffline(article.slug)}
                   title="Remove from offline"
@@ -86,10 +78,10 @@ const OfflineReader = () => {
               <p className="article-description">{article.description}</p>
               <div className="article-meta">
                 <div className="author-info">
-                  <UserAvatar 
-                    username={article.author.username} 
-                    image={article.author.image} 
-                    size="sm" 
+                  <UserAvatar
+                    username={article.author.username}
+                    image={article.author.image}
+                    size="sm"
                   />
                   <span className="author-name">{article.author.username}</span>
                 </div>
@@ -121,7 +113,7 @@ export const saveArticleOffline = (article) => {
     savedAt: new Date().toISOString(),
     id: article.slug
   };
-  
+
   const updated = [...saved.filter(a => a.slug !== article.slug), offlineArticle];
   localStorage.setItem('offlineArticles', JSON.stringify(updated));
 };
@@ -287,7 +279,7 @@ const styles = `
 
   .author-name {
     font-weight: 600;
-    color: #5cb85c;
+    color: #000000;
     font-size: 0.9rem;
   }
 
@@ -308,21 +300,74 @@ const styles = `
 
   @media (max-width: 768px) {
     .offline-reader {
-      padding: 0.5rem;
+      padding: 0;
     }
 
     .offline-article {
-      padding: 1rem;
+      padding: 1.25rem 1rem;
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      margin-bottom: 0;
+    }
+    
+    .offline-article + .offline-article {
+      border-top: none;
     }
 
     .article-title {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+    }
+    
+    .article-description {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    
+    .article-content {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      text-align: justify;
     }
 
     .article-meta {
       flex-direction: column;
       align-items: flex-start;
-      gap: 0.5rem;
+      gap: 0.75rem;
+      padding-bottom: 1rem;
+    }
+    
+    .remove-btn {
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    
+    .offline-status {
+      padding: 1rem;
+      border-radius: 0;
+      margin: 0;
+      font-size: 1rem;
+    }
+    
+    .offline-message {
+      padding: 2rem 1rem;
+    }
+    
+    .offline-message h3 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .offline-message p {
+      font-size: 1rem;
+      line-height: 1.6;
     }
   }
 `;

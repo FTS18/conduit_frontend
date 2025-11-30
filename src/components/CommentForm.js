@@ -30,12 +30,12 @@ const CommentForm = ({ slug, onCommentAdded, currentUser, replyTo, onReplyCancel
 
       const result = await agent.Comments.create(slug, comment);
       setCommentText('');
-      
+
       dispatch({
         type: ADD_COMMENT,
         payload: result
       });
-      
+
       onCommentAdded(result);
     } catch (err) {
       console.error('Error posting comment:', err);
@@ -45,7 +45,7 @@ const CommentForm = ({ slug, onCommentAdded, currentUser, replyTo, onReplyCancel
   };
 
   if (!currentUser) {
-    return <p style={{ color: '#999' }}>Sign in to post comments</p>;
+    return <p style={{ color: 'var(--text-light)' }}>Sign in to post comments</p>;
   }
 
   return (
@@ -67,14 +67,9 @@ const CommentForm = ({ slug, onCommentAdded, currentUser, replyTo, onReplyCancel
         .comment-form {
           margin: 1.5rem 0;
           padding: 1rem;
-          background: white;
+          background: var(--bg-card);
           border-radius: 4px;
-          border: 1px solid #e1e4e8;
-        }
-
-        .dark-theme .comment-form {
-          background: #1a1a1a;
-          border-color: #333;
+          border: 1px solid var(--border-color);
         }
 
         .reply-info {
@@ -83,22 +78,17 @@ const CommentForm = ({ slug, onCommentAdded, currentUser, replyTo, onReplyCancel
           gap: 0.5rem;
           margin-bottom: 0.75rem;
           padding: 0.5rem;
-          background: #f0f8ff;
+          background: var(--bg-hover);
           border-radius: 4px;
           font-size: 0.9rem;
-          color: #373a3c;
-        }
-
-        .dark-theme .reply-info {
-          background: #1a3a4a;
-          color: #e0e0e0;
+          color: var(--text-main);
         }
 
         .cancel-reply {
           margin-left: auto;
           background: none;
           border: none;
-          color: #999;
+          color: var(--text-light);
           cursor: pointer;
           font-size: 1.2rem;
           padding: 0;
@@ -106,11 +96,7 @@ const CommentForm = ({ slug, onCommentAdded, currentUser, replyTo, onReplyCancel
         }
 
         .cancel-reply:hover {
-          color: #373a3c;
-        }
-
-        .dark-theme .cancel-reply:hover {
-          color: #e0e0e0;
+          color: var(--text-main);
         }
       `}</style>
     </div>

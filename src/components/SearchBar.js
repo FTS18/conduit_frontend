@@ -23,7 +23,7 @@ class SearchBar extends React.Component {
     }
 
     agent.Articles.search(query).then(res => {
-      this.setState({ 
+      this.setState({
         results: res.articles.slice(0, 5),
         isOpen: true,
         loading: false
@@ -43,7 +43,7 @@ class SearchBar extends React.Component {
           onChange={this.handleSearch}
           className="search-input"
         />
-        
+
         {isOpen && (
           <div className="search-results">
             {loading && <p className="loading">Searching...</p>}
@@ -72,23 +72,18 @@ class SearchBar extends React.Component {
           .search-input {
             width: 100%;
             padding: 0.5rem 1rem;
-            border: 1px solid #e1e4e8;
+            border: 1px solid var(--border-color);
             border-radius: 20px;
             font-size: 0.9rem;
-            background: white;
-            color: #373a3c;
-          }
-
-          .dark-theme .search-input {
-            background: #222;
-            border-color: #333;
-            color: #e0e0e0;
+            background: var(--bg-card);
+            color: var(--text-main);
+            transition: all 0.2s;
           }
 
           .search-input:focus {
             outline: none;
-            border-color: #5cb85c;
-            box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--shadow-sm);
           }
 
           .search-results {
@@ -96,66 +91,51 @@ class SearchBar extends React.Component {
             top: 100%;
             left: 0;
             right: 0;
-            background: white;
-            border: 1px solid #e1e4e8;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-top: none;
             border-radius: 0 0 8px 8px;
             max-height: 300px;
             overflow-y: auto;
             z-index: 100;
             margin-top: -1px;
-          }
-
-          .dark-theme .search-results {
-            background: #1a1a1a;
-            border-color: #333;
+            box-shadow: var(--shadow-md);
           }
 
           .search-result-item {
             display: block;
             padding: 1rem;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-color);
             text-decoration: none;
-            color: inherit;
+            color: var(--text-main);
             transition: background 0.2s;
           }
 
-          .dark-theme .search-result-item {
-            border-bottom-color: #222;
-          }
-
           .search-result-item:hover {
-            background: #f8f9fa;
-          }
-
-          .dark-theme .search-result-item:hover {
-            background: #222;
+            background: var(--bg-hover);
           }
 
           .search-result-item h4 {
             margin: 0 0 0.5rem 0;
             font-size: 0.9rem;
-            color: #5cb85c;
+            color: var(--text-main);
+            font-weight: 700;
           }
 
           .search-result-item p {
             margin: 0;
             font-size: 0.8rem;
-            color: #666;
+            color: var(--text-secondary);
             display: -webkit-box;
             -webkit-line-clamp: 1;
             -webkit-box-orient: vertical;
             overflow: hidden;
           }
 
-          .dark-theme .search-result-item p {
-            color: #aaa;
-          }
-
           .loading, .empty {
             padding: 1rem;
             text-align: center;
-            color: #999;
+            color: var(--text-light);
             font-size: 0.9rem;
           }
 

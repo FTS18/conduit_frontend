@@ -31,7 +31,7 @@ const Banner = ({ appName, token }) => {
   const handleSearch = (query) => {
     setSearchQuery(query);
     setSelectedIndex(-1);
-    
+
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
@@ -41,7 +41,7 @@ const Banner = ({ appName, token }) => {
         try {
           const results = await agent.Articles.search(query);
           const articles = results.articles || [];
-          
+
           const uniqueAuthors = [];
           const seenAuthors = new Set();
           articles.forEach(article => {
@@ -50,7 +50,7 @@ const Banner = ({ appName, token }) => {
               uniqueAuthors.push(article.author);
             }
           });
-          
+
           setSearchResults(articles);
           setAuthorResults(uniqueAuthors.slice(0, 3));
           setShowResults(true);
@@ -112,7 +112,7 @@ const Banner = ({ appName, token }) => {
           {appName.toLowerCase()}
         </h1>
         <p>A place to share your knowledge.</p>
-        
+
         <div className="banner-search-container">
           <div className="search-input-wrapper" ref={wrapperRef}>
             <input
@@ -140,7 +140,9 @@ const Banner = ({ appName, token }) => {
                       >
                         <UserAvatar username={author.username} image={author.image} size="sm" />
                         <div className="author-info">
-                          <div className="author-name">{author.username}</div>
+                          <div className="author-name">
+                            {(author.username || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          </div>
                           {author.bio && <div className="author-bio">{author.bio}</div>}
                         </div>
                       </div>
@@ -174,28 +176,25 @@ const Banner = ({ appName, token }) => {
 
       <style>{`
         .banner {
-          background: linear-gradient(135deg, #5cb85c 0%, #4a9d4a 100%);
+          background: var(--bg-body);
           padding: 3rem 0;
           margin-bottom: 2rem;
-          color: white;
+          color: var(--text-main);
           text-align: center;
-        }
-
-        .dark-theme .banner {
-          background: linear-gradient(135deg, #4a9d4a 0%, #3a7d3a 100%);
+          border-bottom: 1px solid var(--border-color);
         }
 
         .banner h1 {
           font-size: 3.5rem;
           font-weight: 700;
           margin: 0 0 0.5rem 0;
-          color: white;
+          color: var(--text-main);
         }
 
         .banner p {
           font-size: 1.5rem;
           margin: 0 0 1.5rem 0;
-          color: rgba(255, 255, 255, 0.9);
+          color: var(--text-secondary);
         }
 
         .banner-search-container {
@@ -210,22 +209,23 @@ const Banner = ({ appName, token }) => {
         .banner-search-input {
           width: 100%;
           padding: 0.75rem 1rem;
-          border: none;
-          border-radius: 4px;
+          border: 2px solid var(--border-color);
+          border-radius: 8px;
           font-size: 1rem;
-          background: white;
-          color: #333;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          background: var(--bg-card);
+          color: var(--text-main);
+          box-shadow: var(--shadow-sm);
           transition: all 0.2s;
         }
 
         .banner-search-input:focus {
           outline: none;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          border-color: var(--primary);
+          box-shadow: var(--shadow-md);
         }
 
         .banner-search-input::placeholder {
-          color: #999;
+          color: var(--text-light);
         }
 
         .search-results-dropdown {
@@ -233,14 +233,14 @@ const Banner = ({ appName, token }) => {
           top: 100%;
           left: 0;
           right: 0;
-          background: white;
-          border: 1px solid #e1e4e8;
+          background: var(--bg-card);
+          border: 2px solid var(--border-color);
           border-top: none;
-          border-radius: 0 0 4px 4px;
+          border-radius: 0 0 8px 8px;
           max-height: 400px;
           overflow-y: auto;
           z-index: 1000;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: var(--shadow-md);
           text-align: left;
         }
 
@@ -248,21 +248,21 @@ const Banner = ({ appName, token }) => {
           padding: 0.75rem 1rem;
           font-size: 0.75rem;
           font-weight: 700;
-          color: #999;
+          color: var(--text-light);
           text-transform: uppercase;
-          background: #f8f9fa;
-          border-bottom: 1px solid #e1e4e8;
+          background: var(--bg-hover);
+          border-bottom: 1px solid var(--border-color);
         }
 
         .search-divider {
           height: 1px;
-          background: #e1e4e8;
+          background: var(--border-color);
           margin: 0;
         }
 
         .search-author-item {
           padding: 0.75rem 1rem;
-          border-bottom: 1px solid #f0f0f0;
+          border-bottom: 1px solid var(--border-color);
           cursor: pointer;
           transition: background 0.2s;
           display: flex;
@@ -274,7 +274,7 @@ const Banner = ({ appName, token }) => {
 
         .search-author-item:hover,
         .search-author-item.selected {
-          background: #f0f0f0;
+          background: var(--bg-hover);
         }
 
         .author-info {
@@ -284,13 +284,13 @@ const Banner = ({ appName, token }) => {
 
         .author-name {
           font-weight: 600;
-          color: #333;
+          color: var(--text-main);
           font-size: 0.9rem;
         }
 
         .author-bio {
           font-size: 0.8rem;
-          color: #999;
+          color: var(--text-secondary);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -298,7 +298,7 @@ const Banner = ({ appName, token }) => {
 
         .search-result-item {
           padding: 0.75rem 1rem;
-          border-bottom: 1px solid #f0f0f0;
+          border-bottom: 1px solid var(--border-color);
           cursor: pointer;
           transition: background 0.2s;
           text-decoration: none;
@@ -312,12 +312,12 @@ const Banner = ({ appName, token }) => {
 
         .search-result-item:hover,
         .search-result-item.selected {
-          background: #f0f0f0;
+          background: var(--bg-hover);
         }
 
         .result-title {
           font-weight: 600;
-          color: #333;
+          color: var(--text-main);
           margin-bottom: 0.25rem;
           white-space: nowrap;
           overflow: hidden;
@@ -326,7 +326,7 @@ const Banner = ({ appName, token }) => {
 
         .result-author {
           font-size: 0.85rem;
-          color: #999;
+          color: var(--text-secondary);
         }
 
         @media (max-width: 768px) {

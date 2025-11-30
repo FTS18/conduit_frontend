@@ -1,41 +1,192 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    <link rel="stylesheet" href="//demo.productionready.io/main.css">
-    <link href="//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css">
-    <link href="//fonts.googleapis.com/css?family=Titillium+Web:700|Source+Serif+Pro:400,700|Merriweather+Sans:400,700|Source+Sans+Pro:400,300,600,700,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
-    <style>
-      html, body {
-        max-height: 100vh;
-        max-width: 100%;
-        overflow-x: hidden;
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+  <link rel="stylesheet" href="//demo.productionready.io/main.css">
+  <link href="//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif !important;
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+      -webkit-touch-callout: none;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    html,
+    body {
+      max-height: 100vh;
+      max-width: 100%;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    /* Mobile navigation - hidden by default */
+    .mobile-top-bar,
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-top-bar {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: #fff;
+        border-bottom: 1px solid #e1e4e8;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        z-index: 1000;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
-    </style>
-    <!--
-      Notice the use of %PUBLIC_URL% in the tag above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favico.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>Conduit</title>
-  </head>
-  <body style="max-height: 100vh; max-width: 100%; overflow-x: hidden;">
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: #fff;
+        border-top: 1px solid #e1e4e8;
+        align-items: center;
+        justify-content: space-around;
+        z-index: 1000;
+        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+      .nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 6px 8px;
+        color: #666;
+        text-decoration: none;
+        font-size: 10px;
+        font-weight: 500;
+        min-width: 50px;
+      }
 
-      To begin the development, run `npm start`.
-      To create a production bundle, use `npm run build`.
-    -->
-  </body>
+      .nav-btn.active {
+        color: #000000;
+      }
+
+      .nav-icon {
+        width: 20px;
+        height: 20px;
+        margin-bottom: 2px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+      }
+
+      body {
+        padding-top: 56px !important;
+        padding-bottom: 60px !important;
+      }
+
+      /* Dark theme mobile nav */
+      .dark-theme .mobile-top-bar,
+      .dark-theme .mobile-bottom-nav {
+        background: #1a1a1a;
+        border-color: #333;
+      }
+
+      .dark-theme .nav-btn {
+        color: #aaa;
+      }
+
+      .dark-theme .nav-btn.active {
+        color: #ffffff;
+      }
+    }
+
+    /* Desktop - ensure no mobile nav */
+    @media (min-width: 769px) {
+
+      .mobile-top-bar,
+      .mobile-bottom-nav {
+        display: none !important;
+      }
+
+      body {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+      }
+    }
+  </style>
+  <title>Conduit</title>
+</head>
+
+<body style="max-height: 100vh; max-width: 100%; overflow-x: hidden;">
+  <div class="mobile-top-bar">
+    <button onclick="history.back()" style="background: none; border: none; padding: 8px;">
+      <svg class="nav-icon" viewBox="0 0 24 24">
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+    </button>
+    <span style="font-weight: 600; font-size: 18px;">Conduit</span>
+    <button style="background: none; border: none; padding: 8px;">
+      <svg class="nav-icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="1" />
+        <circle cx="12" cy="19" r="1" />
+      </svg>
+    </button>
+  </div>
+  <div class="mobile-bottom-nav">
+    <a href="#/" class="nav-btn active">
+      <svg class="nav-icon" viewBox="0 0 24 24">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9,22 9,12 15,12 15,22" />
+      </svg>
+      <span>Home</span>
+    </a>
+    <a href="#/editor" class="nav-btn">
+      <svg class="nav-icon" viewBox="0 0 24 24">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
+      </svg>
+      <span>Write</span>
+    </a>
+    <a href="#/reading-list" class="nav-btn">
+      <svg class="nav-icon" viewBox="0 0 24 24">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+      <span>Read</span>
+    </a>
+    <a href="#/notifications" class="nav-btn">
+      <svg class="nav-icon" viewBox="0 0 24 24">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </svg>
+      <span>Alerts</span>
+    </a>
+    <a href="#/profile" class="nav-btn">
+      <svg class="nav-icon" viewBox="0 0 24 24">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      <span>Profile</span>
+    </a>
+  </div>
+  <div id="root"></div>
+</body>
+
 </html>

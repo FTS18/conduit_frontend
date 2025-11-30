@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
 const sizeMap = {
-  sm: '24px',
-  md: '32px',
-  lg: '48px'
+  sm: '28px',
+  md: '36px',
+  lg: '64px'
 };
 
 const colors = [
@@ -27,15 +27,15 @@ const UserAvatar = ({ username = 'U', image, size = 'md' }) => {
   if (image && !imageError) {
     return (
       <div style={{ position: 'relative', width: sizeMap[size], height: sizeMap[size] }}>
-        <img 
-          src={image} 
-          alt={username} 
+        <img
+          src={image}
+          alt={username}
           onLoad={handleImageLoad}
           onError={handleImageError}
-          style={{ 
-            width: sizeMap[size], 
-            height: sizeMap[size], 
-            borderRadius: '50%', 
+          style={{
+            width: sizeMap[size],
+            height: sizeMap[size],
+            borderRadius: '50%',
             objectFit: 'cover',
             display: imageLoading ? 'none' : 'block'
           }}
@@ -60,12 +60,13 @@ const UserAvatar = ({ username = 'U', image, size = 'md' }) => {
     );
   }
 
-  const initials = (username || 'U')
-    .split(' ')
-    .map(n => n && n[0] ? n[0] : '')
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || 'U';
+  const getInitials = (name) => {
+    const parts = name.split(/[_\s]+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
+
+  const initials = getInitials(username || 'U');
 
   const bgColor = colors[Math.abs((username || 'U').split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % colors.length];
 
@@ -81,7 +82,7 @@ const UserAvatar = ({ username = 'U', image, size = 'md' }) => {
         justifyContent: 'center',
         color: 'white',
         fontWeight: 'bold',
-        fontSize: size === 'sm' ? '10px' : size === 'md' ? '14px' : '18px'
+        fontSize: size === 'sm' ? '11px' : size === 'md' ? '14px' : '22px'
       }}>
       {initials}
     </div>

@@ -67,16 +67,11 @@ class TrendingArticles extends React.Component {
 
         <style>{`
           .trending-section {
-            background: white;
-            border: 1px solid #e1e4e8;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-          }
-
-          .dark-theme .trending-section {
-            background: #1a1a1a;
-            border-color: #333;
           }
 
           .trending-header {
@@ -88,12 +83,9 @@ class TrendingArticles extends React.Component {
 
           .trending-header h3 {
             margin: 0;
-            color: #373a3c;
+            color: var(--text-main);
             font-size: 1.1rem;
-          }
-
-          .dark-theme .trending-header h3 {
-            color: #e0e0e0;
+            font-weight: 700;
           }
 
           .timeframe-buttons {
@@ -103,24 +95,24 @@ class TrendingArticles extends React.Component {
 
           .timeframe-btn {
             padding: 0.4rem 0.8rem;
-            background: #f0f0f0;
-            border: 1px solid #e1e4e8;
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
+            color: var(--text-secondary);
           }
 
-          .dark-theme .timeframe-btn {
-            background: #222;
-            border-color: #333;
-            color: #e0e0e0;
+          .timeframe-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-main);
           }
 
           .timeframe-btn.active {
-            background: #5cb85c;
-            color: white;
-            border-color: #5cb85c;
+            background: var(--primary);
+            color: var(--bg-body);
+            border-color: var(--primary);
           }
 
           .trending-list {
@@ -134,51 +126,39 @@ class TrendingArticles extends React.Component {
             align-items: center;
             gap: 1rem;
             padding: 0.75rem;
-            background: #f8f9fa;
+            background: var(--bg-hover);
             border-radius: 4px;
             text-decoration: none;
             transition: all 0.2s;
-          }
-
-          .dark-theme .trending-item {
-            background: #222;
+            border: 1px solid transparent;
           }
 
           .trending-item:hover {
-            background: #f0f0f0;
+            background: var(--bg-card);
+            border-color: var(--border-color);
             transform: translateX(4px);
-          }
-
-          .dark-theme .trending-item:hover {
-            background: #333;
+            box-shadow: var(--shadow-sm);
           }
 
           .rank {
             font-weight: bold;
-            color: #5cb85c;
+            color: var(--primary);
             font-size: 1.1rem;
             min-width: 30px;
           }
 
           .trending-content h4 {
             margin: 0 0 0.25rem 0;
-            color: #373a3c;
+            color: var(--text-main);
             font-size: 0.9rem;
             line-height: 1.3;
-          }
-
-          .dark-theme .trending-content h4 {
-            color: #e0e0e0;
+            font-weight: 600;
           }
 
           .trending-content p {
             margin: 0;
-            color: #999;
+            color: var(--text-light);
             font-size: 0.8rem;
-          }
-
-          .dark-theme .trending-content p {
-            color: #888;
           }
 
           @media (max-width: 768px) {

@@ -84,15 +84,10 @@ class CommentThread extends React.Component {
           }
 
           .comment-card {
-            background: white;
-            border: 1px solid #e1e4e8;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             padding: 1rem;
-          }
-
-          .dark-theme .comment-card {
-            background: #1a1a1a;
-            border-color: #333;
           }
 
           .comment-header {
@@ -110,29 +105,21 @@ class CommentThread extends React.Component {
           }
 
           .author-name {
-            color: #5cb85c;
+            color: var(--text-main);
             font-weight: 600;
             font-size: 0.9rem;
           }
 
           .comment-date {
-            color: #999;
+            color: var(--text-light);
             font-size: 0.85rem;
             margin-left: auto;
           }
 
-          .dark-theme .comment-date {
-            color: #888;
-          }
-
           .comment-body p {
             margin: 0 0 1rem 0;
-            color: #373a3c;
+            color: var(--text-main);
             line-height: 1.6;
-          }
-
-          .dark-theme .comment-body p {
-            color: #e0e0e0;
           }
 
           .edit-form {
@@ -143,17 +130,13 @@ class CommentThread extends React.Component {
             width: 100%;
             min-height: 100px;
             padding: 0.75rem;
-            border: 1px solid #e1e4e8;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             font-family: inherit;
             font-size: 0.9rem;
             resize: vertical;
-          }
-
-          .dark-theme .edit-textarea {
-            background: #222;
-            border-color: #333;
-            color: #e0e0e0;
+            background: var(--bg-card);
+            color: var(--text-main);
           }
 
           .edit-actions {
@@ -172,31 +155,34 @@ class CommentThread extends React.Component {
           }
 
           .btn-edit {
-            background: #5cb85c;
-            color: white;
+            background: var(--primary);
+            color: var(--bg-body);
           }
 
           .btn-edit:hover {
-            background: #4a9d4a;
+            background: var(--primary-hover);
           }
 
           .btn-delete {
-            background: #e74c3c;
-            color: white;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
           }
 
           .btn-delete:hover {
-            background: #c0392b;
+            background: var(--bg-hover);
+            color: var(--primary);
+            border-color: var(--primary);
           }
 
           .btn-save {
-            background: #5cb85c;
-            color: white;
+            background: var(--primary);
+            color: var(--bg-body);
           }
 
           .btn-cancel {
-            background: #e1e4e8;
-            color: #373a3c;
+            background: var(--secondary);
+            color: var(--text-main);
           }
 
           .comment-actions {
@@ -204,11 +190,7 @@ class CommentThread extends React.Component {
             gap: 0.5rem;
             margin-top: 1rem;
             padding-top: 1rem;
-            border-top: 1px solid #e1e4e8;
-          }
-
-          .dark-theme .comment-actions {
-            border-top-color: #333;
+            border-top: 1px solid var(--border-color);
           }
         `}</style>
       </div>

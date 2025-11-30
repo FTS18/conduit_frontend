@@ -13,16 +13,16 @@ class Tags extends React.Component {
     ev.preventDefault();
     const { selectedTags } = this.state;
     const isSelected = selectedTags.includes(tag);
-    
+
     let newSelectedTags;
     if (isSelected) {
       newSelectedTags = selectedTags.filter(t => t !== tag);
     } else {
       newSelectedTags = [...selectedTags, tag];
     }
-    
+
     this.setState({ selectedTags: newSelectedTags });
-    
+
     if (newSelectedTags.length > 0) {
       const tagsQuery = newSelectedTags.join(',');
       const mergedPayload = () => {
@@ -55,13 +55,22 @@ class Tags extends React.Component {
         <div className="tag-list">
           <style>{`
             .tag-active {
-              background-color: #5cb85c !important;
+              background-color: #000000 !important;
               color: white !important;
-              border-color: #5cb85c !important;
+              border-color: #000000 !important;
             }
             .tag-active:hover {
-              background-color: #4a9a4a !important;
-              border-color: #4a9a4a !important;
+              background-color: #333333 !important;
+              border-color: #333333 !important;
+            }
+            .dark-theme .tag-active {
+              background-color: #ffffff !important;
+              color: black !important;
+              border-color: #ffffff !important;
+            }
+            .dark-theme .tag-active:hover {
+              background-color: #cccccc !important;
+              border-color: #cccccc !important;
             }
           `}</style>
           {

@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 import React from 'react';
 import agent from '../../agent';
 import { connect } from 'react-redux';
-import { 
-  DELETE_ARTICLE, 
-  FOLLOW_USER, 
+import {
+  DELETE_ARTICLE,
+  FOLLOW_USER,
   UNFOLLOW_USER,
   ARTICLE_FAVORITED,
   ARTICLE_UNFAVORITED,
@@ -48,11 +48,11 @@ const mapDispatchToProps = dispatch => ({
 const ArticleActions = props => {
   const article = props.article;
   const currentUser = props.currentUser;
-  
+
   const del = () => {
     props.onClickDelete(agent.Articles.del(article.slug))
   };
-  
+
   const handleFollow = ev => {
     ev.preventDefault();
     if (article.author.following) {
@@ -61,7 +61,7 @@ const ArticleActions = props => {
       props.onFollow(article.author.username);
     }
   };
-  
+
   const handleFavorite = ev => {
     ev.preventDefault();
     if (article.favorited) {
@@ -70,7 +70,7 @@ const ArticleActions = props => {
       props.onFavorite(article.slug);
     }
   };
-  
+
   const handleBookmark = ev => {
     ev.preventDefault();
     if (article.bookmarked) {
@@ -79,7 +79,7 @@ const ArticleActions = props => {
       props.onBookmark(article.slug);
     }
   };
-  
+
   if (props.canModify) {
     return (
       <span>
@@ -101,22 +101,22 @@ const ArticleActions = props => {
 
   return (
     <span>
-      <button 
+      <button
         className={`btn btn-sm ${article.author.following ? 'btn-secondary' : 'btn-outline-secondary'}`}
         onClick={handleFollow}>
         <i className="ion-plus-round"></i>
         &nbsp;{article.author.following ? 'Unfollow' : 'Follow'} {article.author.username}
       </button>
       &nbsp;&nbsp;
-      <button 
+      <button
         className={`btn btn-sm ${article.favorited ? 'btn-primary' : 'btn-outline-primary'}`}
         onClick={handleFavorite}>
         <i className="ion-heart"></i>
         &nbsp;{article.favorited ? 'Unfavorite' : 'Favorite'} Article ({article.favoritesCount})
       </button>
       &nbsp;&nbsp;
-      <button 
-        className={`btn btn-sm ${article.bookmarked ? 'btn-success' : 'btn-outline-success'}`}
+      <button
+        className={`btn btn-sm ${article.bookmarked ? 'btn-secondary' : 'btn-outline-secondary'}`}
         onClick={handleBookmark}>
         <i className="ion-bookmark"></i>
         &nbsp;{article.bookmarked ? 'Unbookmark' : 'Bookmark'} Article

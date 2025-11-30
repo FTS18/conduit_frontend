@@ -138,8 +138,8 @@ const MentionInput = ({ value, onChange, onSubmit, placeholder = 'Write a commen
 
         .mention-textarea:focus {
           outline: none;
-          border-color: #5cb85c;
-          box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.1);
+          border-color: #000000;
+          box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
         }
 
         .mention-suggestions {
@@ -187,7 +187,7 @@ const MentionInput = ({ value, onChange, onSubmit, placeholder = 'Write a commen
 
         .mention-submit-btn {
           padding: 0.5rem 1rem;
-          background: #5cb85c;
+          background: #000000;
           color: white;
           border: none;
           border-radius: 4px;
@@ -198,7 +198,7 @@ const MentionInput = ({ value, onChange, onSubmit, placeholder = 'Write a commen
         }
 
         .mention-submit-btn:hover {
-          background: #4a9d4a;
+          background: #333333;
         }
 
         .mention-submit-btn:disabled {
