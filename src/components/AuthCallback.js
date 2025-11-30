@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import agent from '../agent';
+import { connect } from 'react-redux';
+import { LOGIN } from '../constants/actionTypes';
 
-const AuthCallback = ({ history }) => {
+const mapDispatchToProps = dispatch => ({
+    onLogin: payload => dispatch({ type: LOGIN, payload })
+});
+
+const AuthCallback = ({ history, onLogin }) => {
     const [status, setStatus] = useState('Processing...');
 
     useEffect(() => {
@@ -11,13 +17,42 @@ const AuthCallback = ({ history }) => {
 
     const handleCallback = async () => {
         try {
-            // Get the session from the URL hash
-            const { data: { session }, error } = await supabase.auth.getSession();
+            console.log('AuthCallback: Starting callback handling...');
+            // First try to get the session normally
+            let { data: { session }, error } = await supabase.auth.getSession();
+            console.log('AuthCallback: Initial session check:', { session, error });
+
+            // If no session and we have a hash with access_token, try to parse it manually
+            // This handles the case where HashRouter adds a '/' prefix (e.g. #/access_token=...)
+            if (!session && window.location.hash && window.location.hash.includes('access_token')) {
+                console.log('AuthCallback: Attempting manual hash parsing...');
+                const hash = window.location.hash.substring(1); // Remove #
+                // If it starts with /, remove it
+                const paramsStr = hash.startsWith('/') ? hash.substring(1) : hash;
+                const params = new URLSearchParams(paramsStr);
+                const access_token = params.get('access_token');
+                const refresh_token = params.get('refresh_token');
+
+                if (access_token && refresh_token) {
+                    console.log('AuthCallback: Found tokens in hash, setting session...');
+                    const { data, error: setSessionError } = await supabase.auth.setSession({
+                        access_token,
+                        refresh_token,
+                    });
+                    if (!setSessionError && data.session) {
+                        session = data.session;
+                        console.log('AuthCallback: Session successfully set from hash');
+                    } else {
+                        console.error('AuthCallback: Failed to set session from hash:', setSessionError);
+                    }
+                }
+            }
 
             if (error) throw error;
 
             if (session) {
                 setStatus('Creating your profile...');
+                console.log('AuthCallback: Session found, syncing with backend...', session.user);
 
                 // Get user info from Supabase
                 const { user } = session;
@@ -32,8 +67,11 @@ const AuthCallback = ({ history }) => {
                         supabaseId: user.id
                     });
 
+                    console.log('AuthCallback: Backend sync response:', response);
+
                     // Store the token from your backend
                     if (response && response.user) {
+                        onLogin(response);
                         setStatus('Success! Redirecting...');
                         setTimeout(() => {
                             history.push('/');
@@ -49,6 +87,7 @@ const AuthCallback = ({ history }) => {
                     }, 1000);
                 }
             } else {
+                console.log('AuthCallback: No session found after all attempts');
                 setStatus('No session found. Redirecting to login...');
                 setTimeout(() => {
                     history.push('/login');
@@ -108,4 +147,4 @@ const AuthCallback = ({ history }) => {
     );
 };
 
-export default AuthCallback;
+export default connect(null, mapDispatchToProps)(AuthCallback);

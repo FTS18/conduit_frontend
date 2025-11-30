@@ -1,4 +1,5 @@
 import agent from '../agent';
+import { AuthProvider } from '../AuthContext';
 import MinimalHeader from './MinimalHeader';
 import Sidebar from './Sidebar';
 import GlobalSidebar from './GlobalSidebar';
@@ -59,6 +60,11 @@ class App extends React.Component {
   };
 
   render() {
+    // Handle Supabase OAuth redirect which might look like /access_token=...
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+      return <AuthCallback history={this.props.history} />;
+    }
+
     if (this.props.appLoaded) {
       return (
         <div className="app-layout">
@@ -73,6 +79,7 @@ class App extends React.Component {
               <Route path="/login" component={Login} />
               <Route path="/register" component={Register} />
               <Route path="/auth/callback" component={AuthCallback} />
+              <Route path="/access_token" component={AuthCallback} />
               <Route path="/editor/:slug" component={Editor} />
               <Route path="/editor" component={Editor} />
               <Route path="/article/:id" component={Article} />
@@ -329,4 +336,8 @@ class App extends React.Component {
   }
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App));
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(props => (
+  <AuthProvider>
+    <App {...props} />
+  </AuthProvider>
+)));

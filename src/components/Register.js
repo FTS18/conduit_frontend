@@ -19,8 +19,7 @@ const mapDispatchToProps = dispatch => ({
     dispatch({ type: UPDATE_FIELD_AUTH, key: 'password', value }),
   onChangeUsername: value =>
     dispatch({ type: UPDATE_FIELD_AUTH, key: 'username', value }),
-  onSubmit: (username, email, password) => {
-    const payload = agent.Auth.register(username, email, password);
+  onSubmit: (payload) => {
     dispatch({ type: REGISTER, payload })
   },
   onUnload: () =>
@@ -35,7 +34,25 @@ class Register extends React.Component {
     this.changeUsername = ev => this.props.onChangeUsername(ev.target.value);
     this.submitForm = (username, email, password) => ev => {
       ev.preventDefault();
-      this.props.onSubmit(username, email, password);
+      const promise = (async () => {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username }
+          }
+        });
+        if (error) throw error;
+        if (data.user) {
+          return agent.Auth.supabaseLogin({
+            email: data.user.email,
+            username: username,
+            supabaseId: data.user.id
+          });
+        }
+        throw new Error('Registration successful! Please check your email to confirm.');
+      })();
+      this.props.onSubmit(promise);
     };
 
     this.handleGoogleLogin = async () => {
@@ -43,7 +60,11 @@ class Register extends React.Component {
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: `${window.location.origin}/auth/callback`
+            redirectTo: window.location.origin,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            }
           }
         });
         if (error) throw error;
