@@ -1,4 +1,5 @@
 import React from 'react';
+import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 import { Link } from 'react-router-dom';
 import agent from '../agent';
 import { connect } from 'react-redux';
@@ -121,7 +122,7 @@ const ArticlePreview = props => {
               {article.author.username}
             </Link>
             <span className="article-date">
-              {new Date(article.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+              {distanceInWordsToNow(new Date(article.createdAt), { addSuffix: true })}
             </span>
           </div>
         </div>

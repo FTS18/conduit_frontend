@@ -1,4 +1,5 @@
 import ArticleActions from './ArticleActions';
+import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 import UserAvatar from '../UserAvatar';
 import { Link } from 'react-router-dom';
 import React from 'react';
@@ -16,7 +17,7 @@ const ArticleMeta = props => {
           {(article.author.username || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
         </Link>
         <span className="date">
-          {new Date(article.createdAt).toDateString()}
+          {distanceInWordsToNow(new Date(article.createdAt), { addSuffix: true })}
         </span>
       </div>
 

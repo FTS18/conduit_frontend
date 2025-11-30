@@ -50,18 +50,6 @@ const Sidebar = ({ currentUser, location }) => {
             </Link>
           </div>
         )}
-
-        <div className="nav-section">
-          <div className="nav-divider"></div>
-          <div style={{ padding: '0 1.5rem', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-            Trending Now
-          </div>
-          {/* We will need to implement tag fetching here or pass it from parent */}
-          {/* For now, let's just link to the Explore page or similar if we don't have tags in props */}
-          <Link to="/" className="nav-item">
-            <span className="nav-text">Explore Topics</span>
-          </Link>
-        </div>
       </div>
 
       <style jsx>{`
