@@ -13,10 +13,10 @@ const YourFeedTab = props => {
 
     return (
       <li className="feed-tab">
-        <a  href=""
-            className={ props.tab === 'feed' ? 'feed-tab-link active' : 'feed-tab-link' }
-            onClick={clickHandler}
-            title="Personalized feed from your followed users + recommended articles">
+        <a href=""
+          className={props.tab === 'feed' ? 'feed-tab-link active' : 'feed-tab-link'}
+          onClick={clickHandler}
+          title="Personalized feed from your followed users + recommended articles">
           Your Feed
         </a>
       </li>
@@ -34,7 +34,7 @@ const GlobalFeedTab = props => {
     <li className="feed-tab">
       <a
         href=""
-        className={ props.tab === 'all' ? 'feed-tab-link active' : 'feed-tab-link' }
+        className={props.tab === 'all' ? 'feed-tab-link active' : 'feed-tab-link'}
         onClick={clickHandler}
         title="All articles from all users">
         Global Feed
@@ -76,7 +76,7 @@ class MainView extends React.Component {
 
   handlePostSubmit = () => {
     if (this.state.postContent.trim()) {
-      console.log('Post:', this.state.postContent);
+      // Post submission logic here
       this.setState({ postContent: '' });
     }
   };
@@ -94,7 +94,7 @@ class MainView extends React.Component {
             rows="3"
           />
           <div className="post-actions">
-            <button 
+            <button
               className="post-btn"
               onClick={this.handlePostSubmit}
               disabled={!this.state.postContent.trim()}

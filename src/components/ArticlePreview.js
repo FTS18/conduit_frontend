@@ -67,7 +67,9 @@ const ArticlePreview = props => {
         title: article.title,
         text: article.description,
         url: url
-      }).catch(err => console.log('Share failed:', err));
+      }).catch(err => {
+        // Share failed
+      });
     }
   };
 

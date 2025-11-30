@@ -46,7 +46,7 @@ const RecommendedProfiles = (props) => {
             isFromAPI = true;
           }
         } catch (err) {
-          console.log('❌ Profile API not available, falling back to article authors');
+          // Profile API not available, falling back to article authors
         }
 
         if (allProfiles.length === 0) {
@@ -80,7 +80,7 @@ const RecommendedProfiles = (props) => {
 
         setProfiles(filteredProfiles);
       } catch (err) {
-        console.error('Error fetching profiles:', err);
+
         setProfiles([]);
       } finally {
         setLoading(false);

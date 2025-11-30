@@ -10,7 +10,7 @@ import {
 const promiseMiddleware = store => next => action => {
   if (isPromise(action.payload)) {
     store.dispatch({ type: ASYNC_START, subtype: action.type });
-    
+
     if (action.optimistic) {
       store.dispatch(action.optimistic);
     }
@@ -24,7 +24,6 @@ const promiseMiddleware = store => next => action => {
         if (!skipTracking && currentState.viewChangeCounter !== currentView) {
           return
         }
-        console.log('RESULT', res);
         action.payload = res;
         store.dispatch({ type: ASYNC_END, promise: action.payload });
         store.dispatch(action);
@@ -34,8 +33,6 @@ const promiseMiddleware = store => next => action => {
         if (!skipTracking && currentState.viewChangeCounter !== currentView) {
           return
         }
-        console.log('ERROR', error);
-        console.log('ERROR RESPONSE', error.response);
         action.error = true;
         action.payload = error.response && error.response.body ? error.response.body : { errors: { message: error.message || 'Network error' } };
         if (!action.skipTracking) {

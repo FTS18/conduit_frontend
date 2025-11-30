@@ -45,20 +45,20 @@ class Home extends React.Component {
   fetchAllAuthorsArticles = async () => {
     try {
       const regularArticles = await agent.Articles.all();
-      
+
       let allAuthors = [];
       try {
         const profilesResult = await agent.Profile.getAllUsers();
         allAuthors = profilesResult.profiles || profilesResult.users || [];
-        console.log('🔍 Found', allAuthors.length, 'authors in API');
+
       } catch (err) {
-        console.log('❌ No additional authors API available');
+
         return regularArticles;
       }
 
       const authorArticlesPromises = allAuthors.slice(0, 10).map(author =>
         agent.Articles.byAuthor(author.username, 0).catch(err => {
-          console.log(`⚠️ No articles found for ${author.username}`);
+
           return { articles: [] };
         })
       );
@@ -79,14 +79,14 @@ class Home extends React.Component {
         }
       });
 
-      console.log('📚 Total articles loaded:', allArticles.length, '(including from API authors)');
+
 
       return {
         articles: allArticles.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
         articlesCount: allArticles.length
       };
     } catch (err) {
-      console.error('Error fetching all authors articles:', err);
+
       return agent.Articles.all();
     }
   }
