@@ -169,9 +169,6 @@ class Profile extends React.Component {
             <div className="profile-info">
               <h2>{(profile.username || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
               <p>{profile.bio}</p>
-              <div className="member-since">
-                Member since {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'recently'}
-              </div>
             </div>
           </div>
 
@@ -249,17 +246,9 @@ class Profile extends React.Component {
 
           .profile-info p {
             color: var(--text-secondary);
-            margin: 0 0 0.5rem 0;
+            margin: 0;
             font-size: 0.95rem;
             line-height: 1.5;
-          }
-
-          .member-since {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
           }
 
           .profile-stats {

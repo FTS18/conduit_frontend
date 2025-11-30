@@ -1,6 +1,5 @@
 import ListErrors from './ListErrors';
 import React from 'react';
-import marked from 'marked';
 import agent from '../agent';
 import { connect } from 'react-redux';
 import {
@@ -34,7 +33,6 @@ const mapDispatchToProps = dispatch => (({
 class Editor extends React.Component {
   constructor() {
     super();
-    this.state = { activeTab: 'write' };
 
     const updateFieldEvent =
       key => ev => this.props.onUpdateField(key, ev.target.value);
@@ -120,35 +118,14 @@ class Editor extends React.Component {
                   onChange={this.changeDescription} />
               </fieldset>
 
-              <div className="editor-tabs">
-                <button
-                  type="button"
-                  className={`editor-tab ${this.state.activeTab === 'write' ? 'active' : ''}`}
-                  onClick={() => this.setState({ activeTab: 'write' })}
-                >
-                  Write
-                </button>
-                <button
-                  type="button"
-                  className={`editor-tab ${this.state.activeTab === 'preview' ? 'active' : ''}`}
-                  onClick={() => this.setState({ activeTab: 'preview' })}
-                >
-                  Preview
-                </button>
-              </div>
-
               <fieldset className="form-group">
-                {this.state.activeTab === 'write' ? (
-                  <textarea
-                    className="form-control"
-                    rows="8"
-                    placeholder="Write your article (in markdown)"
-                    value={this.props.body}
-                    onChange={this.changeBody}>
-                  </textarea>
-                ) : (
-                  <div className="markdown-preview" dangerouslySetInnerHTML={{ __html: marked(this.props.body || '') }}></div>
-                )}
+                <textarea
+                  className="form-control"
+                  rows="8"
+                  placeholder="Write your article (in markdown)"
+                  value={this.props.body}
+                  onChange={this.changeBody}>
+                </textarea>
               </fieldset>
 
               <fieldset className="form-group">
@@ -303,43 +280,6 @@ class Editor extends React.Component {
             .pull-xs-right {
               float: none !important;
             }
-          }
-          .editor-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
-          }
-
-          .editor-tab {
-            background: none;
-            border: none;
-            padding: 0.75rem 1rem;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-          }
-
-          .editor-tab:hover {
-            color: var(--primary);
-          }
-
-          .editor-tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-          }
-
-          .markdown-preview {
-            min-height: 200px;
-            padding: 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--bg-body);
-            color: var(--text-main);
-            overflow-y: auto;
           }
         `}</style>
       </div>

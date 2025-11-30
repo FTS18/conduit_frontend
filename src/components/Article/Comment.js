@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import UserAvatar from '../UserAvatar';
@@ -39,7 +38,7 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
                 {comment.author.username}
               </Link>
               <div className="comment-date">
-                {distanceInWordsToNow(new Date(comment.createdAt), { addSuffix: true })}
+                {new Date(comment.createdAt).toLocaleDateString()}
               </div>
             </div>
           </div>

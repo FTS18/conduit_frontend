@@ -50,6 +50,7 @@ const Sidebar = ({ currentUser, location }) => {
             </Link>
           </div>
         )}
+
       </div>
 
       <style jsx>{`
