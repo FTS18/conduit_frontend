@@ -29,9 +29,11 @@ const CommentContainer = props => {
 
   const sortedComments = sortComments(props.comments);
 
-  const handleCommentAdded = () => {
+  const handleCommentAdded = (newComment) => {
     setReplyTo(null);
     setReplyToCommentId(null);
+    // Force refresh to show new comment
+    window.location.reload();
   };
 
   const handleReply = (username, commentId) => {
@@ -75,7 +77,8 @@ const CommentContainer = props => {
             comments={sortedComments}
             slug={props.slug}
             currentUser={props.currentUser}
-            onReply={handleReply} />
+            onReply={handleReply}
+            onCommentUpdate={() => window.location.reload()} />
         </div>
 
         <style>{`

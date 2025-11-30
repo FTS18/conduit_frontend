@@ -1,12 +1,17 @@
 import React from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { LOGOUT } from '../constants/actionTypes';
 
-const mapStateToProps = state => ({
+const mapStateToProps = state => (({
   currentUser: state.common.currentUser
-});
+}));
 
-const Sidebar = ({ currentUser, location }) => {
+const mapDispatchToProps = dispatch => (({
+  onLogout: () => dispatch({ type: LOGOUT })
+}));
+
+const Sidebar = ({ currentUser, location, onLogout }) => {
   const isActive = (path) => {
     if (path === '/' && location.pathname === '/') return true;
     if (path !== '/' && location.pathname.startsWith(path)) return true;
@@ -50,8 +55,15 @@ const Sidebar = ({ currentUser, location }) => {
             </Link>
           </div>
         )}
-
       </div>
+
+      {currentUser && (
+        <div className="sidebar-footer">
+          <button className="nav-item logout-btn" onClick={onLogout}>
+            <span className="nav-text">Sign Out</span>
+          </button>
+        </div>
+      )}
 
       <style jsx>{`
         .sidebar-nav {
@@ -66,10 +78,18 @@ const Sidebar = ({ currentUser, location }) => {
           z-index: 100;
           overflow-y: auto;
           transition: background-color 0.3s ease, border-color 0.3s ease;
+          display: flex;
+          flex-direction: column;
         }
 
         .sidebar-content {
           padding: 1.5rem 0;
+          flex: 1;
+        }
+
+        .sidebar-footer {
+          padding: 1rem 0;
+          border-top: 1px solid var(--border-color);
         }
 
         .nav-section {
@@ -91,6 +111,11 @@ const Sidebar = ({ currentUser, location }) => {
           border-radius: 0;
           font-weight: 600;
           border-left: 3px solid transparent;
+          background: none;
+          border: none;
+          cursor: pointer;
+          width: 100%;
+          text-align: left;
         }
 
         .nav-item:hover {
@@ -103,6 +128,15 @@ const Sidebar = ({ currentUser, location }) => {
           background: var(--bg-hover);
           color: var(--primary);
           border-left-color: var(--primary);
+        }
+
+        .logout-btn {
+          color: #dc3545;
+        }
+
+        .logout-btn:hover {
+          background: rgba(220, 53, 69, 0.1);
+          color: #dc3545;
         }
 
         .nav-text {
@@ -127,4 +161,4 @@ const Sidebar = ({ currentUser, location }) => {
   );
 };
 
-export default withRouter(connect(mapStateToProps)(Sidebar));
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Sidebar));

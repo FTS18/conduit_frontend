@@ -31,7 +31,6 @@
 /* Main Content Area */
 .main-content,
 .home-content,
-.article-content,
 .profile-content,
 .editor-content {
   position: absolute;
@@ -39,6 +38,19 @@
   right: 25%;
   top: 56px;
   width: auto;
+  height: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Article content takes full width */
+.article-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
   height: auto;
   box-sizing: border-box;
   display: flex;
@@ -109,6 +121,7 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+
   .sidebar-nav,
   .global-sidebar {
     display: none;

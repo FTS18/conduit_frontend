@@ -23,11 +23,53 @@
   ],
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#5cb85c",
-  "background_color": "#f8f9fa",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
-  "categories": ["social", "productivity", "news"],
-  "prefer_related_applications": false
+  "categories": [
+    "social",
+    "productivity",
+    "news"
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Write Article",
+      "short_name": "Write",
+      "description": "Create a new article",
+      "url": "/#/editor",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Reading List",
+      "short_name": "Read",
+      "description": "View your saved articles",
+      "url": "/#/reading-list",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "short_name": "Alerts",
+      "description": "Check your notifications",
+      "url": "/#/notifications",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }

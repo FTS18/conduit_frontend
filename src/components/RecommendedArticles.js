@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import agent from '../agent';
-import { getTopTags } from '../utils/readingHistory';
+import { getTopTags, getReadingHistory } from '../utils/readingHistory';
+import { getRecommendations } from '../utils/recommendationEngine';
 
 class RecommendedArticles extends React.Component {
   constructor(props) {
@@ -9,38 +10,60 @@ class RecommendedArticles extends React.Component {
     this.state = {
       articles: [],
       loading: true,
-      topTags: []
+      topTags: [],
+      error: null
     };
   }
 
   componentWillMount() {
+    this.loadRecommendations();
+  }
+
+  loadRecommendations = () => {
     const topTags = getTopTags();
     if (topTags.length === 0) {
       this.setState({ loading: false });
       return;
     }
 
-    this.setState({ topTags });
+    this.setState({ topTags, loading: true });
 
-    Promise.all(topTags.map(tag => agent.Articles.byTag(tag))).then(results => {
-      const articles = [];
-      const seen = new Set();
-      results.forEach(result => {
-        result.articles.forEach(article => {
-          if (!seen.has(article.slug)) {
-            seen.add(article.slug);
-            articles.push(article);
-          }
+    Promise.all(topTags.map(tag => agent.Articles.byTag(tag)))
+      .then(results => {
+        const articles = [];
+        const seen = new Set();
+        results.forEach(result => {
+          (result.articles || []).forEach(article => {
+            if (!seen.has(article.slug)) {
+              seen.add(article.slug);
+              articles.push(article);
+            }
+          });
         });
+        
+        const readingHistory = getReadingHistory();
+        const isMobile = window.innerWidth <= 768;
+        const limit = isMobile ? 3 : 6;
+        
+        const recommendations = getRecommendations(articles, topTags, readingHistory, limit);
+        this.setState({ articles: recommendations, loading: false, error: null });
+      })
+      .catch(err => {
+        console.error('Failed to load recommendations:', err);
+        this.setState({ loading: false, error: 'Failed to load recommendations' });
       });
-      const isMobile = window.innerWidth <= 768;
-      const limit = isMobile ? 3 : 6;
-      this.setState({ articles: articles.slice(0, limit), loading: false });
-    });
   }
 
   render() {
-    const { articles, loading, topTags } = this.state;
+    const { articles, loading, topTags, error } = this.state;
+
+    if (error) {
+      return (
+        <div className="recommended-section error">
+          <p className="error-message">{error}</p>
+        </div>
+      );
+    }
 
     if (loading || articles.length === 0) {
       return null;
@@ -74,6 +97,17 @@ class RecommendedArticles extends React.Component {
             border-radius: 0;
             box-shadow: var(--shadow-md);
             border: 1px solid var(--border-color);
+          }
+
+          .recommended-section.error {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+          }
+
+          .error-message {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin: 0;
           }
 
           .recommended-header {
@@ -180,6 +214,10 @@ class RecommendedArticles extends React.Component {
 
             .recommended-reason {
               font-size: 0.8rem;
+            }
+
+            .recommended-section.error {
+              padding: 1rem;
             }
           }
         `}</style>

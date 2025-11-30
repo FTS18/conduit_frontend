@@ -92,7 +92,9 @@ const ArticlePreview = props => {
             <ShareIcon />
           </button>
         </div>
-        <p className="article-description">{article.description}</p>
+        {article.description && (
+          <p className="article-description">{article.description}</p>
+        )}
         <div className="article-footer">
           <span className="read-more">Read more...</span>
         </div>
@@ -273,9 +275,9 @@ const ArticlePreview = props => {
 
         .article-description {
           color: var(--text-secondary);
-          font-size: calc(1rem * var(--font-scale));
+          font-size: calc(0.9rem * var(--font-scale));
           margin: 0 0 1rem 0;
-          line-height: 1.6;
+          line-height: 1.5;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
@@ -425,9 +427,9 @@ const ArticlePreview = props => {
           }
 
           .article-description {
-            font-size: calc(0.95rem * var(--font-scale));
+            font-size: calc(0.9rem * var(--font-scale));
             margin-bottom: 1rem;
-            line-height: 1.6;
+            line-height: 1.5;
             -webkit-line-clamp: 3;
             color: var(--text-secondary);
           }

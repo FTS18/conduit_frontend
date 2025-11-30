@@ -28,13 +28,13 @@ class BookmarkButton extends React.Component {
   handleClick = async (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
-    
+
     if (this.state.isLoading || !this.props.currentUser) {
       return;
     }
 
     this.setState({ isLoading: true });
-    
+
     try {
       if (this.props.article.bookmarked) {
         await this.props.unbookmark(this.props.article.slug);
@@ -51,7 +51,7 @@ class BookmarkButton extends React.Component {
   render() {
     const { article, currentUser } = this.props;
     const { isLoading } = this.state;
-    
+
     if (!currentUser) {
       return null;
     }

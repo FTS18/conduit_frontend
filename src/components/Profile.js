@@ -48,13 +48,13 @@ const FollowUserButton = props => {
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = state => (({
   ...state.articleList,
   currentUser: state.common.currentUser,
   profile: state.profile
-});
+}));
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = dispatch => (({
   onFollow: username => dispatch({
     type: FOLLOW_USER,
     payload: agent.Profile.follow(username)
@@ -65,7 +65,7 @@ const mapDispatchToProps = dispatch => ({
     payload: agent.Profile.unfollow(username)
   }),
   onUnload: () => dispatch({ type: PROFILE_PAGE_UNLOADED })
-});
+}));
 
 class Profile extends React.Component {
   constructor(props) {
@@ -105,23 +105,23 @@ class Profile extends React.Component {
       articlesPromise = agent.Articles.favoritedBy(props.match.params.username);
     } else if (tab === 'comments') {
       articlesPromise = agent.Comments.byAuthor(props.match.params.username)
-        .then(res => ({
+        .then(res => (({
           articles: res.comments || [],
           articlesCount: res.comments ? res.comments.length : 0
-        }));
+        })));
     } else {
       articlesPromise = agent.Articles.byAuthor(props.match.params.username);
     }
 
     this.props.onLoad(Promise.all([
-      agent.Profile.get(props.match.params.username).then(res => ({
+      agent.Profile.get(props.match.params.username).then(res => (({
         profile: res.profile,
         isOwnProfile
-      })),
-      articlesPromise.then(res => ({
+      }))),
+      articlesPromise.then(res => (({
         articles: res.articles || [],
         articlesCount: res.articlesCount || 0
-      })),
+      }))),
       countPromise
     ]));
   }
@@ -134,10 +134,10 @@ class Profile extends React.Component {
       articlesPromise = agent.Articles.favoritedBy(props.match.params.username);
     } else if (tab === 'comments') {
       articlesPromise = agent.Comments.byAuthor(props.match.params.username)
-        .then(res => ({
+        .then(res => (({
           articles: res.comments || [],
           articlesCount: res.comments ? res.comments.length : 0
-        }));
+        })));
     } else {
       articlesPromise = agent.Articles.byAuthor(props.match.params.username);
     }
@@ -209,7 +209,76 @@ class Profile extends React.Component {
             <UserAvatar username={profile.username} image={profile.image} size="lg" />
             <div className="profile-info">
               <h2>{(profile.username || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
-              <p>{profile.bio}</p>
+              <p className="profile-bio">{profile.bio}</p>
+              
+              <div className="profile-details">
+                {isUser && profile.email && (
+                  <div className="profile-detail">
+                    <span className="detail-label">Email:</span>
+                    <span className="detail-text">{profile.email}</span>
+                  </div>
+                )}
+                
+                <div className="profile-detail">
+                  <span className="detail-label">Member since:</span>
+                  <span className="detail-text">
+                    {profile.createdAt ? 
+                      new Date(profile.createdAt).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 
+                      new Date().toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long',
+                        day: 'numeric'
+                      })
+                    }
+                  </span>
+                </div>
+                
+                {profile.location && (
+                  <div className="profile-detail">
+                    <span className="detail-label">Location:</span>
+                    <span className="detail-text">{profile.location}</span>
+                  </div>
+                )}
+                
+                {profile.website && (
+                  <div className="profile-detail">
+                    <span className="detail-label">Website:</span>
+                    <a href={profile.website} target="_blank" rel="noopener noreferrer" className="detail-link">
+                      {profile.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
+                )}
+                
+                <div className="profile-detail">
+                  <span className="detail-label">Total Articles:</span>
+                  <span className="detail-text">{profile.totalArticlesCount || 0}</span>
+                </div>
+                
+                <div className="profile-detail">
+                  <span className="detail-label">Total Comments:</span>
+                  <span className="detail-text">{profile.totalCommentsCount || 0}</span>
+                </div>
+                
+                <div className="profile-detail">
+                  <span className="detail-label">Total Likes Received:</span>
+                  <span className="detail-text">{profile.totalLikesReceived || 0}</span>
+                </div>
+                
+                {profile.authMethods && profile.authMethods.length > 1 && (
+                  <div className="profile-detail">
+                    <span className="detail-label">Connected Accounts:</span>
+                    <span className="detail-text">
+                      {profile.authMethods.map(method => 
+                        method === 'email' ? 'Email' : method.charAt(0).toUpperCase() + method.slice(1)
+                      ).join(', ')}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -310,11 +379,45 @@ class Profile extends React.Component {
             color: var(--text-main);
           }
 
-          .profile-info p {
+          .profile-bio {
             color: var(--text-secondary);
-            margin: 0;
+            margin: 0 0 1rem 0;
             font-size: 0.95rem;
             line-height: 1.5;
+          }
+          
+          .profile-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+          
+          .profile-detail {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+          }
+          
+          .detail-label {
+            font-weight: 600;
+            color: var(--text-main);
+            min-width: 120px;
+            display: inline-block;
+          }
+          
+          .detail-text {
+            color: var(--text-secondary);
+          }
+          
+          .detail-link {
+            color: var(--primary);
+            text-decoration: none;
+          }
+          
+          .detail-link:hover {
+            text-decoration: underline;
           }
 
           .profile-stats {

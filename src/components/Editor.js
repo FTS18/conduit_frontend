@@ -35,7 +35,7 @@ const mapDispatchToProps = dispatch => (({
 class Editor extends React.Component {
   constructor() {
     super();
-    this.state = { activeTab: 'write' };
+    this.state = { activeTab: 'write', generatingAI: false };
 
     const updateFieldEvent =
       key => ev => this.props.onUpdateField(key, ev.target.value);
@@ -53,6 +53,28 @@ class Editor extends React.Component {
 
     this.removeTagHandler = tag => () => {
       this.props.onRemoveTag(tag);
+    };
+
+    this.generateWithAI = async () => {
+      if (!this.props.title.trim()) {
+        alert('Please enter a title first');
+        return;
+      }
+
+      this.setState({ generatingAI: true });
+      try {
+        const result = await agent.Articles.generateContent(this.props.title);
+        this.props.onUpdateField('description', result.description);
+        
+        result.tags.forEach(tag => {
+          this.props.onUpdateField('tagInput', tag);
+          this.props.onAddTag();
+        });
+      } catch (err) {
+        alert('Failed to generate content');
+      } finally {
+        this.setState({ generatingAI: false });
+      }
     };
 
     this.submitForm = ev => {
@@ -105,12 +127,23 @@ class Editor extends React.Component {
             <fieldset>
 
               <fieldset className="form-group">
-                <input
-                  className="form-control form-control-lg"
-                  type="text"
-                  placeholder="Article Title"
-                  value={this.props.title}
-                  onChange={this.changeTitle} />
+                <div className="title-input-container">
+                  <input
+                    className="form-control form-control-lg"
+                    type="text"
+                    placeholder="Article Title"
+                    value={this.props.title}
+                    onChange={this.changeTitle} />
+                  <button
+                    type="button"
+                    className="btn btn-ai-generate"
+                    onClick={this.generateWithAI}
+                    disabled={this.state.generatingAI || !this.props.title?.trim()}
+                    title="Generate description and tags with AI"
+                  >
+                    {this.state.generatingAI ? '⏳' : '✨'} Generate
+                  </button>
+                </div>
               </fieldset>
 
               <fieldset className="form-group">
@@ -398,6 +431,52 @@ class Editor extends React.Component {
             color: var(--text-secondary);
             margin-top: 0.25rem;
             margin-left: 0.25rem;
+          }
+
+          .title-input-container {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+          }
+
+          .title-input-container .form-control {
+            flex: 1;
+          }
+
+          .btn-ai-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            min-width: 110px;
+          }
+
+          .btn-ai-generate:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+          }
+
+          .btn-ai-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+          }
+
+          @media (max-width: 768px) {
+            .title-input-container {
+              flex-direction: column;
+              gap: 0.5rem;
+            }
+
+            .btn-ai-generate {
+              width: 100%;
+            }
           }
         `}</style>
       </div>

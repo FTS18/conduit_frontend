@@ -27,3 +27,7 @@ ReactDOM.render((
   </Provider>
 
 ), document.getElementById('root'));
+
+// Service worker disabled to prevent auto-refresh during development
+// import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+// serviceWorkerRegistration.register();

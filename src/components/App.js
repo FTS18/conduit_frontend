@@ -17,6 +17,12 @@ import ReadingList from '../components/ReadingList';
 import Register from '../components/Register';
 import Settings from '../components/Settings';
 import AuthCallback from '../components/AuthCallback';
+import TermsOfService from '../components/TermsOfService';
+import PrivacyPolicy from '../components/PrivacyPolicy';
+import ForgotPassword from '../components/ForgotPassword';
+import A2HSPrompt from '../components/A2HSPrompt';
+import { ToastProvider } from '../components/ToastContext';
+import { KeyboardShortcutsProvider } from '../components/KeyboardShortcuts';
 import { store } from '../store';
 import { push } from 'react-router-redux';
 
@@ -78,6 +84,9 @@ class App extends React.Component {
               <Route exact path="/" component={Home} />
               <Route path="/login" component={Login} />
               <Route path="/register" component={Register} />
+              <Route path="/forgot-password" component={ForgotPassword} />
+              <Route path="/terms" component={TermsOfService} />
+              <Route path="/privacy" component={PrivacyPolicy} />
               <Route path="/auth/callback" component={AuthCallback} />
               <Route path="/access_token" component={AuthCallback} />
               <Route path="/editor/:slug" component={Editor} />
@@ -90,6 +99,8 @@ class App extends React.Component {
               <Route path="/notifications" component={Notifications} />
             </Switch>
           </div>
+
+          <A2HSPrompt />
 
           <div className="mobile-bottom-nav">
             <Link to="/" className={`nav-link ${this.isActive('/') ? 'active' : ''}`}>
@@ -337,7 +348,11 @@ class App extends React.Component {
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(props => (
-  <AuthProvider>
-    <App {...props} />
-  </AuthProvider>
+  <ToastProvider>
+    <KeyboardShortcutsProvider>
+      <AuthProvider>
+        <App {...props} />
+      </AuthProvider>
+    </KeyboardShortcutsProvider>
+  </ToastProvider>
 )));

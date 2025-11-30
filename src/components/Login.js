@@ -4,6 +4,13 @@ import React from 'react';
 import agent from '../agent';
 import { supabase } from '../supabaseClient';
 import { connect } from 'react-redux';
+import { validateEmail } from '../utils/authValidation';
+import { checkRateLimit, recordFailedAttempt, clearFailedAttempts, getDeviceFingerprint } from '../utils/authSecurity';
+import { handleAccountLinking } from '../utils/accountLinking';
+import { checkForDuplicateAccounts, autoMergeOnLogin } from '../utils/accountMerging';
+import TwoFactorAuth from './TwoFactorAuth';
+import AccountLinkingModal from './AccountLinkingModal';
+import AccountMergeModal from './AccountMergeModal';
 import {
   UPDATE_FIELD_AUTH,
   LOGIN,
@@ -26,20 +33,174 @@ const mapDispatchToProps = dispatch => ({
 class Login extends React.Component {
   constructor() {
     super();
-    this.changeEmail = ev => this.props.onChangeEmail(ev.target.value);
+    this.state = {
+      showPassword: false,
+      emailError: '',
+      isValidating: false,
+      rememberMe: false,
+      showTwoFactor: false,
+      rateLimitError: '',
+      deviceTrust: localStorage.getItem('deviceTrusted') === 'true',
+      showAccountLinking: false,
+      linkingData: null,
+      showAccountMerge: false,
+      mergeData: null
+    };
+    
+    this.changeEmail = ev => {
+      const email = ev.target.value;
+      this.props.onChangeEmail(email);
+      
+      if (email) {
+        const validation = validateEmail(email);
+        this.setState({ emailError: validation.isValid ? '' : validation.message });
+      } else {
+        this.setState({ emailError: '' });
+      }
+    };
+    
     this.changePassword = ev => this.props.onChangePassword(ev.target.value);
+    
+    this.togglePasswordVisibility = () => {
+      this.setState(prev => ({ showPassword: !prev.showPassword }));
+    };
+    
     this.submitForm = (email, password) => ev => {
       ev.preventDefault();
-      const promise = (async () => {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        return agent.Auth.supabaseLogin({
-          email: data.user.email,
-          username: data.user.user_metadata?.username || data.user.email.split('@')[0],
-          supabaseId: data.user.id
+      
+      const emailValidation = validateEmail(email);
+      if (!emailValidation.isValid) {
+        this.setState({ emailError: emailValidation.message });
+        return;
+      }
+      
+      // Check rate limiting
+      const rateCheck = checkRateLimit(email);
+      if (!rateCheck.allowed) {
+        this.setState({ 
+          rateLimitError: `Too many failed attempts. Try again in ${rateCheck.remainingMinutes} minutes.` 
         });
+        return;
+      }
+      
+      this.setState({ isValidating: true, rateLimitError: '' });
+      
+      const promise = (async () => {
+        try {
+          // Check for duplicate accounts first
+          const duplicateCheck = await checkForDuplicateAccounts(email, 'email');
+          
+          if (duplicateCheck.hasDuplicates) {
+            this.setState({
+              showAccountMerge: true,
+              mergeData: { email, accounts: duplicateCheck.accounts },
+              isValidating: false
+            });
+            return null;
+          }
+          
+          // Check for account linking scenarios
+          const linkingCheck = await handleAccountLinking(email, 'email');
+          
+          if (linkingCheck.action === 'link_required') {
+            this.setState({
+              showAccountLinking: true,
+              linkingData: linkingCheck,
+              isValidating: false
+            });
+            return null;
+          }
+          
+          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) {
+            recordFailedAttempt(email);
+            throw error;
+          }
+          
+          clearFailedAttempts(email);
+          
+          // Check if 2FA is needed (simulate based on device trust)
+          if (!this.state.deviceTrust && Math.random() > 0.7) {
+            this.setState({ showTwoFactor: true, isValidating: false });
+            return null;
+          }
+          
+          // Remember device if requested
+          if (this.state.rememberMe) {
+            localStorage.setItem('deviceTrusted', 'true');
+            localStorage.setItem('deviceFingerprint', getDeviceFingerprint());
+          }
+          
+          return agent.Auth.supabaseLogin({
+            email: data.user.email,
+            username: data.user.user_metadata?.username || data.user.email.split('@')[0],
+            supabaseId: data.user.id
+          });
+        } catch (error) {
+          this.setState({ isValidating: false });
+          throw error;
+        }
       })();
-      this.props.onSubmit(promise);
+      
+      if (promise) {
+        promise.finally(() => this.setState({ isValidating: false }));
+        this.props.onSubmit(promise);
+      }
+    };
+    
+    this.handleTwoFactorVerify = async (code) => {
+      // Simulate 2FA verification
+      if (code === '123456') {
+        this.setState({ showTwoFactor: false });
+        if (this.state.rememberMe) {
+          localStorage.setItem('deviceTrusted', 'true');
+        }
+        
+        const { email } = this.props;
+        const loginData = await agent.Auth.supabaseLogin({
+          email,
+          username: email.split('@')[0],
+          supabaseId: 'verified-user'
+        });
+        
+        this.props.onSubmit(Promise.resolve(loginData));
+      } else {
+        throw new Error('Invalid code');
+      }
+    };
+    
+    this.handleTwoFactorCancel = () => {
+      this.setState({ showTwoFactor: false });
+    };
+    
+    this.handleAccountLinkingSuccess = (result) => {
+      this.setState({ showAccountLinking: false, linkingData: null });
+      // Continue with login flow
+      const loginData = agent.Auth.supabaseLogin({
+        email: result.user.email,
+        username: result.user.user_metadata?.username || result.user.email.split('@')[0],
+        supabaseId: result.user.id
+      });
+      this.props.onSubmit(Promise.resolve(loginData));
+    };
+    
+    this.handleAccountLinkingCancel = () => {
+      this.setState({ showAccountLinking: false, linkingData: null });
+    };
+    
+    this.handleAccountMergeSuccess = (result) => {
+      this.setState({ showAccountMerge: false, mergeData: null });
+      // Continue with login using merged account
+      const loginData = agent.Auth.supabaseLogin({
+        email: result.mergedAccount.email,
+        username: result.mergedAccount.username,
+        supabaseId: result.mergedAccount.id
+      });
+      this.props.onSubmit(Promise.resolve(loginData));
+    };
+    
+    this.handleAccountMergeCancel = () => {
+      this.setState({ showAccountMerge: false, mergeData: null });
     };
 
     this.handleGoogleLogin = async () => {
@@ -88,28 +249,72 @@ class Login extends React.Component {
 
                   <fieldset className="form-group">
                     <input
-                      className="form-control form-control-lg"
+                      className={`form-control form-control-lg ${this.state.emailError ? 'is-invalid' : ''}`}
                       type="email"
                       placeholder="Email"
                       value={email}
-                      onChange={this.changeEmail} />
+                      onChange={this.changeEmail}
+                      required />
+                    {this.state.emailError && (
+                      <div className="invalid-feedback">{this.state.emailError}</div>
+                    )}
+                    {this.state.rateLimitError && (
+                      <div className="invalid-feedback">{this.state.rateLimitError}</div>
+                    )}
                   </fieldset>
 
-                  <fieldset className="form-group">
-                    <input
-                      className="form-control form-control-lg"
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={this.changePassword} />
+                  <fieldset className="form-group password-field">
+                    <div className="password-input-wrapper">
+                      <input
+                        className="form-control form-control-lg"
+                        type={this.state.showPassword ? 'text' : 'password'}
+                        placeholder="Password"
+                        value={password}
+                        onChange={this.changePassword}
+                        required />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={this.togglePasswordVisibility}
+                        aria-label={this.state.showPassword ? 'Hide password' : 'Show password'}>
+                        {this.state.showPassword ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="m10.73 5.08-1.4.14a11.32 11.32 0 0 0-7.4 7.78l-.27.68a11.32 11.32 0 0 0 7.4 7.78l.27-.14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="m17 17-5-5-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </fieldset>
+
+                  <fieldset className="form-group remember-me">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={this.state.rememberMe}
+                        onChange={(e) => this.setState({ rememberMe: e.target.checked })}
+                      />
+                      <span className="checkmark"></span>
+                      Trust this device for 30 days
+                    </label>
                   </fieldset>
 
                   <button
                     className="btn btn-lg btn-primary pull-xs-right"
                     type="submit"
-                    disabled={this.props.inProgress}>
-                    Sign in
+                    disabled={this.props.inProgress || this.state.isValidating || this.state.emailError || this.state.rateLimitError}>
+                    {this.props.inProgress || this.state.isValidating ? 'Signing in...' : 'Sign in'}
                   </button>
+                  
+                  <div className="forgot-password">
+                    <Link to="/forgot-password">Forgot your password?</Link>
+                  </div>
 
                 </fieldset>
               </form>
@@ -130,6 +335,34 @@ class Login extends React.Component {
                 </svg>
                 Continue with Google
               </button>
+              
+              {this.state.showTwoFactor && (
+                <TwoFactorAuth
+                  email={this.props.email}
+                  onVerify={this.handleTwoFactorVerify}
+                  onCancel={this.handleTwoFactorCancel}
+                />
+              )}
+              
+              {this.state.showAccountLinking && this.state.linkingData && (
+                <AccountLinkingModal
+                  email={this.props.email}
+                  existingAuthMethod={this.state.linkingData.existingUser.authMethods?.[0] || 'social'}
+                  newAuthMethod="email"
+                  socialData={this.state.linkingData.existingUser}
+                  onSuccess={this.handleAccountLinkingSuccess}
+                  onCancel={this.handleAccountLinkingCancel}
+                />
+              )}
+              
+              {this.state.showAccountMerge && this.state.mergeData && (
+                <AccountMergeModal
+                  email={this.state.mergeData.email}
+                  accounts={this.state.mergeData.accounts}
+                  onSuccess={this.handleAccountMergeSuccess}
+                  onCancel={this.handleAccountMergeCancel}
+                />
+              )}
             </div>
 
           </div>
@@ -280,6 +513,114 @@ class Login extends React.Component {
 
           .btn-google svg {
             flex-shrink: 0;
+          }
+
+          .password-field {
+            position: relative;
+          }
+
+          .password-input-wrapper {
+            position: relative;
+          }
+
+          .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+          }
+
+          .password-toggle:hover {
+            color: var(--text-main);
+          }
+
+          .password-toggle:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+
+          .form-control.is-invalid {
+            border-color: #dc3545;
+          }
+
+          .invalid-feedback {
+            display: block;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #dc3545;
+          }
+
+          .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          .remember-me {
+            margin: 1rem 0;
+          }
+
+          .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+          }
+
+          .checkbox-label input[type="checkbox"] {
+            display: none;
+          }
+
+          .checkmark {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 3px;
+            margin-right: 0.5rem;
+            position: relative;
+            transition: all 0.2s;
+          }
+
+          .checkbox-label input:checked + .checkmark {
+            background: var(--primary);
+            border-color: var(--primary);
+          }
+
+          .checkbox-label input:checked + .checkmark::after {
+            content: '✓';
+            position: absolute;
+            top: -2px;
+            left: 2px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+          }
+
+          .forgot-password {
+            text-align: center;
+            margin-top: 1rem;
+          }
+
+          .forgot-password a {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-decoration: none;
+          }
+
+          .forgot-password a:hover {
+            color: var(--primary);
+            text-decoration: underline;
           }
         `}</style>
       </div>

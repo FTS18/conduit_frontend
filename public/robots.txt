@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and auth pages
+Disallow: /settings
+Disallow: /editor
+
+# Sitemap
+Sitemap: https://pecathon.vercel.app/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1

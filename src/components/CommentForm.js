@@ -4,7 +4,7 @@ import agent from '../agent';
 import { connect } from 'react-redux';
 import { ADD_COMMENT } from '../constants/actionTypes';
 
-const CommentForm = ({ slug, onCommentAdded, currentUser, replyTo, onReplyCancel, replyToCommentId, dispatch }) => {
+const CommentForm = ({ slug, onCommentAdded, currentUser, replyTo, onReplyCancel, replyToCommentId, dispatch, isInline = false }) => {
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,12 +31,14 @@ const CommentForm = ({ slug, onCommentAdded, currentUser, replyTo, onReplyCancel
       const result = await agent.Comments.create(slug, comment);
       setCommentText('');
 
-      dispatch({
-        type: ADD_COMMENT,
-        payload: result
-      });
+      if (!isInline) {
+        dispatch({
+          type: ADD_COMMENT,
+          payload: result
+        });
+      }
 
-      onCommentAdded(result);
+      onCommentAdded(result.comment || result);
     } catch (err) {
       console.error('Error posting comment:', err);
     } finally {
@@ -65,8 +67,8 @@ const CommentForm = ({ slug, onCommentAdded, currentUser, replyTo, onReplyCancel
       />
       <style>{`
         .comment-form {
-          margin: 1.5rem 0;
-          padding: 1rem;
+          margin: ${isInline ? '0.75rem 0' : '1.5rem 0'};
+          padding: ${isInline ? '0.75rem' : '1rem'};
           background: var(--bg-card);
           border-radius: 4px;
           border: 1px solid var(--border-color);

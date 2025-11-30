@@ -29,13 +29,34 @@ const CommentList = props => {
     );
   }
   
-  // Filter out replies to show only top-level comments
-  const topLevelComments = props.comments.filter(comment => !comment.parentId);
+  // Build nested comment structure
+  const buildCommentTree = (comments) => {
+    const commentMap = {};
+    const rootComments = [];
+    
+    // First pass: create comment map
+    comments.forEach(comment => {
+      commentMap[comment.id] = { ...comment, replies: [] };
+    });
+    
+    // Second pass: build tree structure
+    comments.forEach(comment => {
+      if (comment.parentId && commentMap[comment.parentId]) {
+        commentMap[comment.parentId].replies.push(commentMap[comment.id]);
+      } else {
+        rootComments.push(commentMap[comment.id]);
+      }
+    });
+    
+    return rootComments;
+  };
+  
+  const nestedComments = buildCommentTree(props.comments);
   
   return (
     <div className="comments-container">
       {
-        topLevelComments.map(comment => {
+        nestedComments.map(comment => {
           return (
             <Comment
               comment={comment}

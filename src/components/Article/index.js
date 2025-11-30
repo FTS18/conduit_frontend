@@ -148,9 +148,9 @@ class Article extends React.Component {
             <div className="article-author-section">
               <UserAvatar username={this.props.article.author.username} image={this.props.article.author.image} size="sm" />
               <div className="author-details">
-                <div className="author-name">
+                <Link to={`/@${this.props.article.author.username}`} className="author-name">
                   {(this.props.article.author.username || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </div>
+                </Link>
                 <div className="article-date">
                   {new Date(this.props.article.createdAt).toLocaleDateString()}
                 </div>
@@ -292,6 +292,12 @@ class Article extends React.Component {
             font-weight: 600;
             color: var(--text-main);
             font-size: calc(0.95rem * var(--font-scale));
+            text-decoration: none;
+            transition: color 0.2s ease;
+          }
+
+          .author-name:hover {
+            color: var(--primary);
           }
 
           .article-date {

@@ -2,6 +2,9 @@ import ListErrors from './ListErrors';
 import React from 'react';
 import agent from '../agent';
 import { connect } from 'react-redux';
+import AccountLinkingSettings from './AccountLinkingSettings';
+import { Card, CardHeader, CardContent, CardTitle } from './ui/Card';
+import { Button } from './ui/Button';
 import {
   SETTINGS_SAVED,
   SETTINGS_PAGE_UNLOADED,
@@ -17,7 +20,10 @@ class SettingsForm extends React.Component {
       username: '',
       bio: '',
       email: '',
-      password: ''
+      password: '',
+      location: '',
+      website: '',
+      inProgress: false
     };
 
     this.updateState = field => ev => {
@@ -28,10 +34,20 @@ class SettingsForm extends React.Component {
 
     this.submitForm = ev => {
       ev.preventDefault();
+      
+      this.setState({ inProgress: true });
 
-      const user = Object.assign({}, this.state);
-      if (!user.password) {
-        delete user.password;
+      const user = {
+        image: this.state.image,
+        username: this.state.username,
+        bio: this.state.bio,
+        email: this.state.email,
+        location: this.state.location,
+        website: this.state.website
+      };
+      
+      if (this.state.password && this.state.password.trim()) {
+        user.password = this.state.password;
       }
 
       this.props.onSubmitForm(user);
@@ -40,23 +56,33 @@ class SettingsForm extends React.Component {
 
   componentWillMount() {
     if (this.props.currentUser) {
-      Object.assign(this.state, {
+      this.setState({
         image: this.props.currentUser.image || '',
-        username: this.props.currentUser.username,
-        bio: this.props.currentUser.bio,
-        email: this.props.currentUser.email
+        username: this.props.currentUser.username || '',
+        bio: this.props.currentUser.bio || '',
+        email: this.props.currentUser.email || '',
+        location: this.props.currentUser.location || '',
+        website: this.props.currentUser.website || ''
       });
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.currentUser) {
-      this.setState(Object.assign({}, this.state, {
+    if (nextProps.currentUser && nextProps.currentUser !== this.props.currentUser) {
+      this.setState({
         image: nextProps.currentUser.image || '',
-        username: nextProps.currentUser.username,
-        bio: nextProps.currentUser.bio,
-        email: nextProps.currentUser.email
-      }));
+        username: nextProps.currentUser.username || '',
+        bio: nextProps.currentUser.bio || '',
+        email: nextProps.currentUser.email || '',
+        location: nextProps.currentUser.location || '',
+        website: nextProps.currentUser.website || '',
+        password: '',
+        inProgress: false
+      });
+    }
+    
+    if (nextProps.errors !== this.props.errors) {
+      this.setState({ inProgress: false });
     }
   }
 
@@ -107,6 +133,26 @@ class SettingsForm extends React.Component {
           </fieldset>
 
           <fieldset className="form-group">
+            <label className="form-label">Location (optional)</label>
+            <input
+              className="form-control form-control-lg"
+              type="text"
+              placeholder="City, Country"
+              value={this.state.location}
+              onChange={this.updateState('location')} />
+          </fieldset>
+
+          <fieldset className="form-group">
+            <label className="form-label">Website (optional)</label>
+            <input
+              className="form-control form-control-lg"
+              type="url"
+              placeholder="https://yourwebsite.com"
+              value={this.state.website}
+              onChange={this.updateState('website')} />
+          </fieldset>
+
+          <fieldset className="form-group">
             <label className="form-label">New Password (optional)</label>
             <input
               className="form-control form-control-lg"
@@ -116,12 +162,14 @@ class SettingsForm extends React.Component {
               onChange={this.updateState('password')} />
           </fieldset>
 
-          <button
-            className="btn btn-lg btn-primary btn-block"
+          <Button
+            variant="primary"
+            size="lg"
+            className="update-btn"
             type="submit"
             disabled={this.state.inProgress}>
-            Update Settings
-          </button>
+            {this.state.inProgress ? 'Updating...' : 'Update Profile'}
+          </Button>
 
         </fieldset>
       </form>
@@ -129,38 +177,84 @@ class SettingsForm extends React.Component {
   }
 }
 
-const mapStateToProps = state => ((({
+const mapStateToProps = state => (({
   ...state.settings,
   currentUser: state.common.currentUser
-})));
+}));
 
-const mapDispatchToProps = dispatch => ((({
+const mapDispatchToProps = dispatch => (({
   onClickLogout: () => dispatch({ type: LOGOUT }),
   onSubmitForm: user =>
     dispatch({ type: SETTINGS_SAVED, payload: agent.Auth.save(user) }),
   onUnload: () => dispatch({ type: SETTINGS_PAGE_UNLOADED })
-})));
+}));
 
 class Settings extends React.Component {
+  handleDeleteAccount = () => {
+    if (window.confirm('Are you sure? This will permanently delete your account and all data. This cannot be undone.')) {
+      agent.Auth.delete().then(() => {
+        window.localStorage.removeItem('jwt');
+        window.location.href = '/';
+      }).catch(err => {
+        alert('Failed to delete account');
+      });
+    }
+  };
+
   render() {
     return (
       <div className="settings-page">
-        <div className="settings-main">
-          <h1>Settings</h1>
+        <div className="settings-container">
+          <div className="settings-header">
+            <h1>Account Settings</h1>
+            <p>Manage your profile information and account preferences</p>
+          </div>
 
           <ListErrors errors={this.props.errors}></ListErrors>
 
-          <SettingsForm
-            currentUser={this.props.currentUser}
-            onSubmitForm={this.props.onSubmitForm} />
+          <Card className="profile-settings-card">
+            <CardHeader>
+              <CardTitle>Profile Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SettingsForm
+                currentUser={this.props.currentUser}
+                onSubmitForm={this.props.onSubmitForm} />
+            </CardContent>
+          </Card>
 
-          <hr className="settings-divider" />
+          <Card className="account-linking-card">
+            <CardHeader>
+              <CardTitle>Connected Accounts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AccountLinkingSettings currentUser={this.props.currentUser} />
+            </CardContent>
+          </Card>
 
-          <button
-            className="btn btn-outline-danger btn-block"
-            onClick={this.props.onClickLogout}>
-            Logout
-          </button>
+          <Card className="danger-zone-card">
+            <CardHeader>
+              <CardTitle>Account Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="action-buttons">
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  className="logout-btn"
+                  onClick={this.props.onClickLogout}>
+                  Sign Out
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  className="delete-btn"
+                  onClick={this.handleDeleteAccount}>
+                  Delete Account
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <style>{`
@@ -170,27 +264,52 @@ class Settings extends React.Component {
             padding: 2rem 1rem;
           }
 
-          .settings-main {
-            max-width: 600px;
+          .settings-container {
+            max-width: 800px;
             margin: 0 auto;
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 2.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
           }
 
-          .settings-main h1 {
+          .settings-header {
             text-align: center;
-            margin-bottom: 2.5rem;
-            color: var(--primary);
-            font-size: 2rem;
+            margin-bottom: 1rem;
+          }
+
+          .settings-header h1 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-main);
+            font-size: 2.5rem;
             font-weight: 700;
             letter-spacing: -0.5px;
           }
 
-          .settings-main .form-group {
-            margin-bottom: 1.75rem;
+          .settings-header p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+          }
+
+          .profile-settings-card,
+          .account-linking-card,
+          .danger-zone-card {
+            width: 100%;
+          }
+
+          .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+          }
+
+          .logout-btn,
+          .delete-btn {
+            width: 100%;
+          }
+
+          .form-group {
+            margin-bottom: 1.5rem;
           }
 
           .form-label {
@@ -201,80 +320,38 @@ class Settings extends React.Component {
             font-size: 0.95rem;
           }
 
-          .settings-main .form-control {
+          .form-control {
             width: 100%;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 0.85rem;
-            font-size: 1rem;
+            padding: 0.75rem;
+            font-size: 0.95rem;
             color: var(--text-main);
-            background: var(--bg-hover);
+            background: var(--bg-body);
             transition: all 0.2s;
             box-sizing: border-box;
             font-family: inherit;
           }
 
-          .settings-main .form-control:focus {
+          .form-control:focus {
             border-color: var(--primary);
             outline: none;
             box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
           }
 
-          .settings-main .form-control-lg {
-            font-size: 1rem;
-            padding: 0.9rem;
+          .form-control-lg {
+            font-size: 0.95rem;
+            padding: 0.85rem;
           }
 
-          .settings-main textarea.form-control {
+          textarea.form-control {
             resize: vertical;
-            min-height: 120px;
+            min-height: 100px;
           }
 
-          .settings-main .btn {
+          .update-btn {
             width: 100%;
-            min-height: 48px;
-            padding: 0.85rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-          }
-
-          .btn-primary {
-            background: var(--primary);
-            color: white;
-          }
-
-          .btn-primary:hover:not(:disabled) {
-            background: #0052a3;
-          }
-
-          .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-          }
-
-          .btn-outline-danger {
-            background: transparent;
-            color: #dc3545;
-            border: 2px solid #dc3545;
-          }
-
-          .btn-outline-danger:hover {
-            background: rgba(220, 53, 69, 0.1);
-          }
-
-          .btn-block {
-            display: block;
-            width: 100%;
-          }
-
-          .settings-divider {
-            border: none;
-            border-top: 1px solid var(--border-color);
-            margin: 2rem 0;
+            margin-top: 1rem;
           }
 
           @media (max-width: 768px) {
@@ -282,17 +359,19 @@ class Settings extends React.Component {
               padding: 1rem 0.5rem;
             }
 
-            .settings-main {
-              padding: 1.5rem;
-              border-radius: 8px;
+            .settings-container {
+              gap: 1.5rem;
             }
 
-            .settings-main h1 {
-              font-size: 1.5rem;
-              margin-bottom: 1.5rem;
+            .settings-header h1 {
+              font-size: 2rem;
             }
 
-            .settings-main .form-group {
+            .settings-header p {
+              font-size: 1rem;
+            }
+
+            .form-group {
               margin-bottom: 1.25rem;
             }
 
@@ -301,19 +380,9 @@ class Settings extends React.Component {
               margin-bottom: 0.4rem;
             }
 
-            .settings-main .form-control {
+            .form-control {
               font-size: 16px;
               padding: 0.75rem;
-            }
-
-            .settings-main .btn {
-              min-height: 44px;
-              padding: 0.75rem 1rem;
-              font-size: 0.95rem;
-            }
-
-            .settings-divider {
-              margin: 1.5rem 0;
             }
           }
         `}</style>

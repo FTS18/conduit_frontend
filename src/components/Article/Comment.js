@@ -3,25 +3,50 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import UserAvatar from '../UserAvatar';
 import agent from '../../agent';
-import { COMMENT_UPVOTED, COMMENT_DOWNVOTED } from '../../constants/actionTypes';
+import CommentForm from '../CommentForm';
+import { COMMENT_UPVOTED, COMMENT_DOWNVOTED, ADD_COMMENT, DELETE_COMMENT } from '../../constants/actionTypes';
 
-const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) => {
-  const [showReplies, setShowReplies] = useState(false);
+const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote, onDelete, dispatch, depth = 0 }) => {
+  const [showReplies, setShowReplies] = useState(true);
+  const [showReplyForm, setShowReplyForm] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  const [replies, setReplies] = useState(comment.replies || []);
 
   const handleVote = async (value) => {
     if (!currentUser || isVoting) return;
     setIsVoting(true);
     try {
       if (value === 1) {
-        onUpvote(comment.id);
+        await agent.Comments.upvote(comment.id);
       } else {
-        onDownvote(comment.id);
+        await agent.Comments.downvote(comment.id);
       }
+      // Refresh comment data
+      window.location.reload();
     } catch (err) {
       console.error('Error voting:', err);
     } finally {
       setIsVoting(false);
+    }
+  };
+
+  const handleReply = () => {
+    setShowReplyForm(true);
+  };
+
+  const handleReplySubmit = async (newReply) => {
+    setReplies(prev => [...prev, newReply]);
+    setShowReplyForm(false);
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Delete this comment?')) {
+      try {
+        await agent.Comments.delete(slug, comment.id);
+        onDelete(comment.id);
+      } catch (err) {
+        console.error('Error deleting comment:', err);
+      }
     }
   };
 
@@ -69,17 +94,13 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
                 </button>
               </React.Fragment>
             )}
-            {currentUser && (
-              <button className="reply-btn" onClick={() => onReply(comment.author.username)}>
+            {currentUser && depth < 2 && (
+              <button className="reply-btn" onClick={handleReply}>
                 Reply
               </button>
             )}
             {canDelete && (
-              <button className="delete-btn" onClick={() => {
-                if (window.confirm('Delete this comment?')) {
-                  agent.Comments.delete(slug, comment.id);
-                }
-              }}>
+              <button className="delete-btn" onClick={handleDelete}>
                 Delete
               </button>
             )}
@@ -88,14 +109,28 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
         <div className="comment-body">{comment.body}</div>
       </div>
 
-      {comment.replies && comment.replies.length > 0 && (
+      {showReplyForm && (
+        <div className="reply-form-container">
+          <CommentForm
+            slug={slug}
+            currentUser={currentUser}
+            replyTo={comment.author.username}
+            replyToCommentId={comment.id}
+            onCommentAdded={handleReplySubmit}
+            onReplyCancel={() => setShowReplyForm(false)}
+            isInline={true}
+          />
+        </div>
+      )}
+
+      {(comment.replies || replies) && (comment.replies || replies).length > 0 && (
         <div className="replies-section">
           <button className="show-replies-btn" onClick={() => setShowReplies(!showReplies)}>
-            {showReplies ? '▼' : '▶'} {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+            {showReplies ? '▼' : '▶'} {(comment.replies || replies).length} replies
           </button>
           {showReplies && (
             <div className="replies-list">
-              {comment.replies.map(reply => (
+              {(comment.replies || replies).map(reply => (
                 <Comment
                   key={reply.id}
                   comment={reply}
@@ -104,6 +139,9 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
                   onReply={onReply}
                   onUpvote={onUpvote}
                   onDownvote={onDownvote}
+                  onDelete={onDelete}
+                  dispatch={dispatch}
+                  depth={depth + 1}
                 />
               ))}
             </div>
@@ -221,6 +259,13 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
           font-size: 0.95rem;
         }
 
+        .reply-form-container {
+          margin-top: 1rem;
+          margin-left: 2.5rem;
+          padding-left: 1.5rem;
+          border-left: 3px solid var(--primary);
+        }
+
         .replies-section {
           margin-left: 2.5rem;
           margin-top: 1rem;
@@ -264,6 +309,11 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
           .vote-btn, .reply-btn, .delete-btn {
             padding: 0.4rem 0.7rem;
             font-size: 0.8rem;
+          }
+
+          .reply-form-container {
+            margin-left: 1rem;
+            padding-left: 0.75rem;
           }
 
           .replies-section {

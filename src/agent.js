@@ -38,6 +38,10 @@ const Auth = {
     requests.post('/users', { user: { username, email, password } }),
   save: user =>
     requests.put('/user', { user }),
+  verifyPassword: password =>
+    requests.post('/user/verify-password', { password }),
+  delete: () =>
+    requests.del('/user'),
   supabaseLogin: (user) =>
     requests.post('/users/login/supabase', { user })
 };
@@ -122,7 +126,9 @@ const Articles = {
   bookmark: slug =>
     requests.post(`/articles/${slug}/bookmark`),
   unbookmark: slug =>
-    requests.del(`/articles/${slug}/bookmark`)
+    requests.del(`/articles/${slug}/bookmark`),
+  generateContent: title =>
+    requests.post('/articles/generate', { title })
 };
 
 const Bookmarks = {
