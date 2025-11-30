@@ -24,8 +24,8 @@ const QuickPostBox = ({ currentUser }) => {
                 tagList: []
             });
             setPostText('');
-            // Refresh the page to show new post
-            window.location.reload();
+            // Reload home page to show new post
+            window.location.hash = '#/';
         } catch (err) {
             console.error('Failed to create post:', err);
         } finally {

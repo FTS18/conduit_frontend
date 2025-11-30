@@ -5,6 +5,7 @@ import agent from '../../agent';
 import { connect } from 'react-redux';
 import marked from 'marked';
 import { Link } from 'react-router-dom';
+import '../../styles/layout.css';
 import {
   ARTICLE_PAGE_LOADED,
   ARTICLE_PAGE_UNLOADED,
@@ -128,7 +129,8 @@ class Article extends React.Component {
       this.props.currentUser.username === this.props.article.author.username;
 
     return (
-      <div className="article-page">
+      <div className="article-content">
+        <div className="content-section">
         <div className="article-preview">
           <h1 className="article-title">{this.props.article.title}</h1>
 
@@ -233,17 +235,19 @@ class Article extends React.Component {
           .article-page {
             background: var(--bg-body);
             min-height: 100vh;
-            padding: 1.5rem;
+            padding: 0;
+            margin: 0;
           }
 
           .article-preview {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 2rem;
+            margin: 0 0 1.5rem 0;
             transition: all 0.2s ease;
             width: 100%;
+            box-sizing: border-box;
           }
 
           .article-preview:hover {
@@ -555,6 +559,7 @@ class Article extends React.Component {
             }
           }
         `}</style>
+        </div>
       </div>
     );
   }

@@ -33,9 +33,9 @@ const FollowUserButton = props => {
   const handleClick = ev => {
     ev.preventDefault();
     if (props.user.following) {
-      props.unfollow(props.user.username)
+      props.unfollow(props.user.username);
     } else {
-      props.follow(props.user.username)
+      props.follow(props.user.username);
     }
   };
 
@@ -80,6 +80,10 @@ class Profile extends React.Component {
     this.loadProfile();
   }
 
+  componentDidMount() {
+    this.loadProfile();
+  }
+
   componentWillReceiveProps(nextProps) {
     if (this.props.match.params.username !== nextProps.match.params.username) {
       this.props.onUnload();
@@ -92,6 +96,7 @@ class Profile extends React.Component {
   loadProfile(props = this.props) {
     const tab = props.match.params.tab || 'articles';
     let articlesPromise;
+    const isOwnProfile = props.currentUser && props.currentUser.username === props.match.params.username;
 
     const countPromise = agent.Articles.byAuthor(props.match.params.username)
       .then(res => res.articlesCount);
@@ -101,7 +106,7 @@ class Profile extends React.Component {
     } else if (tab === 'comments') {
       articlesPromise = agent.Comments.byAuthor(props.match.params.username)
         .then(res => ({
-          comments: res.comments || [],
+          articles: res.comments || [],
           articlesCount: res.comments ? res.comments.length : 0
         }));
     } else {
@@ -109,8 +114,14 @@ class Profile extends React.Component {
     }
 
     this.props.onLoad(Promise.all([
-      agent.Profile.get(props.match.params.username),
-      articlesPromise,
+      agent.Profile.get(props.match.params.username).then(res => ({
+        profile: res.profile,
+        isOwnProfile
+      })),
+      articlesPromise.then(res => ({
+        articles: res.articles || [],
+        articlesCount: res.articlesCount || 0
+      })),
       countPromise
     ]));
   }
@@ -124,7 +135,7 @@ class Profile extends React.Component {
     } else if (tab === 'comments') {
       articlesPromise = agent.Comments.byAuthor(props.match.params.username)
         .then(res => ({
-          comments: res.comments || [],
+          articles: res.comments || [],
           articlesCount: res.comments ? res.comments.length : 0
         }));
     } else {
@@ -182,7 +193,7 @@ class Profile extends React.Component {
 
   render() {
     const profile = this.props.profile;
-    if (!profile) {
+    if (!profile || !profile.username) {
       return null;
     }
 
@@ -241,7 +252,7 @@ class Profile extends React.Component {
 
           {activeTab === 'comments' ? (
             <CommentList
-              comments={this.props.articles}
+              comments={Array.isArray(this.props.articles) ? this.props.articles : []}
               articlesCount={this.props.articlesCount}
             />
           ) : (

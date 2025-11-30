@@ -23,18 +23,20 @@ const mapDispatchToProps = dispatch => ({
 const FollowingModal = ({ username, isOpen, onClose, currentUser, onFollow, onUnfollow }) => {
   const [following, setFollowing] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lastUsername, setLastUsername] = useState(null);
 
   useEffect(() => {
-    if (isOpen && username) {
+    if (isOpen && username && username !== lastUsername) {
       setLoading(true);
       agent.Profile.getFollowing(username)
         .then(res => {
           setFollowing(res.following || []);
+          setLastUsername(username);
         })
         .catch(err => console.error(err))
         .finally(() => setLoading(false));
     }
-  }, [isOpen, username]);
+  }, [isOpen, username, lastUsername]);
 
   const handleFollow = (e, followingUsername) => {
     e.preventDefault();
@@ -49,9 +51,7 @@ const FollowingModal = ({ username, isOpen, onClose, currentUser, onFollow, onUn
     e.preventDefault();
     e.stopPropagation();
     onUnfollow(followingUsername);
-    setFollowing(prev => prev.map(f =>
-      f.username === followingUsername ? { ...f, following: false } : f
-    ));
+    setFollowing(prev => prev.filter(f => f.username !== followingUsername));
   };
 
   if (!isOpen) return null;
@@ -70,21 +70,28 @@ const FollowingModal = ({ username, isOpen, onClose, currentUser, onFollow, onUn
             <div className="following-empty">Not following anyone yet</div>
           ) : (
             following.map(user => (
-              <Link key={user.username} to={`/@${user.username}`} className="following-user-item">
-                <UserAvatar username={user.username} image={user.image} size="sm" />
-                <div className="following-user-info">
-                  <div className="following-username">{user.username}</div>
-                  <div className="following-bio">{user.bio || 'Member'}</div>
-                </div>
+              <div key={user.username} className="following-user-item">
+                <Link to={`/@${user.username}`} className="following-user-link">
+                  <UserAvatar username={user.username} image={user.image} size="sm" />
+                  <div className="following-user-info">
+                    <div className="following-username">{user.username}</div>
+                    <div className="following-bio">{user.bio || 'Member'}</div>
+                  </div>
+                </Link>
                 {currentUser && currentUser.username !== user.username && (
                   <button
                     className={`following-follow-btn ${user.following ? 'following' : ''}`}
-                    onClick={(e) => user.following ? handleUnfollow(e, user.username) : handleFollow(e, user.username)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      user.following ? handleUnfollow(e, user.username) : handleFollow(e, user.username);
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
                     {user.following ? 'Unfollow' : 'Follow'}
                   </button>
                 )}
-              </Link>
+              </div>
             ))
           )}
         </div>
@@ -198,13 +205,21 @@ const styles = `
     padding: 0.75rem 1rem;
     margin: 0 0.5rem;
     border-radius: 8px;
-    text-decoration: none;
     transition: all 0.2s ease;
-    cursor: pointer;
   }
 
   .following-user-item:hover {
     background: var(--bg-hover);
+  }
+
+  .following-user-link {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
+    pointer-events: auto;
   }
 
   .following-user-info {
@@ -242,6 +257,8 @@ const styles = `
     transition: all 0.25s ease;
     white-space: nowrap;
     flex-shrink: 0;
+    pointer-events: auto !important;
+    z-index: 10 !important;
   }
 
   .following-follow-btn:hover {

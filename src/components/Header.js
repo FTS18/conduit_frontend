@@ -140,18 +140,19 @@ class Header extends React.Component {
             top: 0;
             left: 0;
             right: 0;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             z-index: 999;
             height: 56px;
             align-items: center;
             padding: 0;
+            backdrop-filter: blur(20px);
           }
           
           .navbar-left {
             flex-shrink: 0;
-            width: 280px;
+            width: 360px;
             display: flex;
             align-items: center;
             padding-left: 2rem;
@@ -160,7 +161,7 @@ class Header extends React.Component {
 
           .navbar-brand {
             color: var(--primary);
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 700;
             text-decoration: none;
             margin: 0;
@@ -172,7 +173,7 @@ class Header extends React.Component {
             align-items: center;
             gap: 0.75rem;
             padding-right: 2rem;
-            width: 360px;
+            width: 450px;
           }
 
           .nav-icon-btn {

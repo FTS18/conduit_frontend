@@ -135,13 +135,15 @@ class App extends React.Component {
             }
 
             .main-content {
-              flex: 1;
-              margin-left: 280px;
-              margin-right: 360px;
-              margin-top: 64px;
-              min-height: calc(100vh - 64px);
-              width: calc(100% - 640px);
-              max-width: calc(100% - 640px);
+              position: absolute;
+              left: 25%;
+              right: 25%;
+              top: 56px;
+              width: 50%;
+              height: 100vh;
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
               overflow-x: hidden;
             }
 
@@ -156,6 +158,7 @@ class App extends React.Component {
             @media (max-width: 768px) {
               .main-content {
                 margin-left: 0;
+                left: 0;
                 margin-top: 56px;
                 width: 100%;
                 max-width: 100%;

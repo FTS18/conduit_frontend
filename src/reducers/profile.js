@@ -10,22 +10,38 @@ export default (state = {}, action) => {
   switch (action.type) {
     case PROFILE_PAGE_LOADED:
     case PROFILE_COMMENTS_PAGE_LOADED:
+      const profileData = action.payload[0];
+      const profile = profileData && profileData.profile ? profileData.profile : profileData;
       return {
-        ...(action.payload[0] && action.payload[0].profile ? action.payload[0].profile : {}),
-        totalArticlesCount: action.payload[2] || 0
+        ...profile,
+        totalArticlesCount: action.payload[2] || 0,
+        isOwnProfile: profileData && profileData.isOwnProfile
       };
     case PROFILE_PAGE_UNLOADED:
       return {};
     case FOLLOW_USER:
-    case UNFOLLOW_USER:
+      if (state.isOwnProfile) {
+        return {
+          ...state,
+          followingCount: (state.followingCount || 0) + 1
+        };
+      }
       return {
         ...state,
-        ...(action.payload && action.payload.profile ? action.payload.profile : {}),
-        totalArticlesCount: state.totalArticlesCount,
-        following: action.type === FOLLOW_USER,
-        followersCount: action.payload.profile ? action.payload.profile.followersCount : (
-          action.type === FOLLOW_USER ? (state.followersCount || 0) + 1 : (state.followersCount || 0) - 1
-        )
+        following: true,
+        followersCount: (state.followersCount || 0) + 1
+      };
+    case UNFOLLOW_USER:
+      if (state.isOwnProfile) {
+        return {
+          ...state,
+          followingCount: Math.max(0, (state.followingCount || 0) - 1)
+        };
+      }
+      return {
+        ...state,
+        following: false,
+        followersCount: Math.max(0, (state.followersCount || 0) - 1)
       };
     default:
       return state;

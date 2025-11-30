@@ -58,10 +58,11 @@ const Sidebar = ({ currentUser, location }) => {
           position: fixed;
           left: 0;
           top: 64px;
-          width: 280px;
+          width: 25%;
           height: calc(100vh - 64px);
           background: var(--bg-card);
           border-right: 1px solid var(--border-color);
+          box-shadow: 2px 0 16px rgba(0, 0, 0, 0.1);
           z-index: 100;
           overflow-y: auto;
           transition: background-color 0.3s ease, border-color 0.3s ease;

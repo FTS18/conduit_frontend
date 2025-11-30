@@ -2,6 +2,17 @@ import React from 'react';
 import UserAvatar from './UserAvatar';
 
 const CommentList = props => {
+  const handleArticleClick = (e, slug) => {
+    e.preventDefault();
+    window.location.hash = `#/article/${slug}`;
+    setTimeout(() => {
+      const commentsSection = document.querySelector('.comments');
+      if (commentsSection) {
+        commentsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 500);
+  };
+
   if (!props.comments) {
     return (
       <div style={{ marginTop: '2rem' }}>
@@ -48,6 +59,10 @@ const CommentList = props => {
           padding: 1.25rem;
           margin-bottom: 1rem;
           transition: all 0.2s;
+          cursor: pointer;
+          text-decoration: none;
+          display: block;
+          color: inherit;
         }
 
         .comment-item:hover {
@@ -82,13 +97,8 @@ const CommentList = props => {
         .comment-article {
           font-size: 0.85rem;
           color: var(--primary);
-          text-decoration: none;
           margin-top: 0.25rem;
           display: inline-block;
-        }
-
-        .comment-article:hover {
-          text-decoration: underline;
         }
 
         .comment-body {
@@ -119,27 +129,49 @@ const CommentList = props => {
         }
       `}</style>
       {props.comments.map(comment => (
-        <div key={comment.id} className="comment-item">
-          <div className="comment-header">
-            <UserAvatar 
-              username={comment.author.username} 
-              image={comment.author.image} 
-              size="sm" 
-            />
-            <div className="comment-author">
-              <p className="comment-author-name">{comment.author.username}</p>
-              <p className="comment-meta">
-                {new Date(comment.createdAt).toLocaleDateString()} at {new Date(comment.createdAt).toLocaleTimeString()}
-              </p>
-              {comment.article && comment.article.slug && (
-                <a href={`/#/article/${comment.article.slug}`} className="comment-article">
+        comment.article && comment.article.slug ? (
+          <a 
+            key={comment.id}
+            href={`/#/article/${comment.article.slug}`}
+            className="comment-item"
+            onClick={(e) => handleArticleClick(e, comment.article.slug)}
+          >
+            <div className="comment-header">
+              <UserAvatar 
+                username={comment.author.username} 
+                image={comment.author.image} 
+                size="sm" 
+              />
+              <div className="comment-author">
+                <p className="comment-author-name">{comment.author.username}</p>
+                <p className="comment-meta">
+                  {new Date(comment.createdAt).toLocaleDateString()} at {new Date(comment.createdAt).toLocaleTimeString()}
+                </p>
+                <div className="comment-article">
                   On: {comment.article.title}
-                </a>
-              )}
+                </div>
+              </div>
             </div>
+            <p className="comment-body">{comment.body}</p>
+          </a>
+        ) : (
+          <div key={comment.id} className="comment-item">
+            <div className="comment-header">
+              <UserAvatar 
+                username={comment.author.username} 
+                image={comment.author.image} 
+                size="sm" 
+              />
+              <div className="comment-author">
+                <p className="comment-author-name">{comment.author.username}</p>
+                <p className="comment-meta">
+                  {new Date(comment.createdAt).toLocaleDateString()} at {new Date(comment.createdAt).toLocaleTimeString()}
+                </p>
+              </div>
+            </div>
+            <p className="comment-body">{comment.body}</p>
           </div>
-          <p className="comment-body">{comment.body}</p>
-        </div>
+        )
       ))}
     </div>
   );

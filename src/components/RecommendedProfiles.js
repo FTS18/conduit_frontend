@@ -8,8 +8,6 @@ import { FOLLOW_USER, UNFOLLOW_USER } from '../constants/actionTypes';
 
 const mapStateToProps = state => ({
   currentUser: state.common.currentUser,
-  articleAuthor: state.article.article ? state.article.article.author : null,
-  viewedProfile: state.profile
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -24,16 +22,14 @@ const mapDispatchToProps = dispatch => ({
 });
 
 const RecommendedProfiles = (props) => {
-  const { currentUser, showOnlyOnHome = false, articleAuthor, viewedProfile } = props;
-  const [allProfiles, setAllProfiles] = useState([]);
+  const { currentUser, showOnlyOnHome = false } = props;
   const [displayedProfiles, setDisplayedProfiles] = useState([]);
+  const [allProfiles, setAllProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [displayCount, setDisplayCount] = useState(4);
-  const [followingSet, setFollowingSet] = useState(new Set());
 
   useEffect(() => {
     if (showOnlyOnHome && window.location.pathname.includes('/article/')) {
-      setAllProfiles([]);
       setDisplayedProfiles([]);
       setLoading(false);
       return;
@@ -41,31 +37,27 @@ const RecommendedProfiles = (props) => {
 
     const fetchProfiles = async () => {
       try {
-        const profilesResult = await agent.Profile.getAllUsers();
-        let profiles = profilesResult.profiles || profilesResult.users || [];
+        const result = await agent.Profile.getAllUsers();
+        let profiles = result.users || [];
 
         // Filter out current user
         profiles = profiles.filter(p => !currentUser || p.username !== currentUser.username);
 
-        // Get current user's following list
+        // Fetch current user's following list
         if (currentUser) {
-          const currentUserProfile = await agent.Profile.get(currentUser.username);
-          const following = new Set(
-            currentUserProfile.profile.following ? 
-            currentUserProfile.profile.following.map((u: any) => u.username) : 
-            []
-          );
-          setFollowingSet(following);
-
-          // Mark profiles as following
+          const followingRes = await agent.Profile.getFollowing(currentUser.username);
+          const followingUsernames = new Set((followingRes.following || []).map(u => u.username));
           profiles = profiles.map(p => ({
             ...p,
-            following: following.has(p.username)
+            following: followingUsernames.has(p.username)
           }));
         }
 
+        // Sort: unfollowed first, then followed
+        profiles.sort((a, b) => (a.following ? 1 : 0) - (b.following ? 1 : 0));
         setAllProfiles(profiles);
         setDisplayedProfiles(profiles.slice(0, 4));
+        setDisplayCount(4);
       } catch (err) {
         console.error('Error fetching profiles:', err);
         setAllProfiles([]);
@@ -78,55 +70,36 @@ const RecommendedProfiles = (props) => {
     fetchProfiles();
   }, [currentUser, showOnlyOnHome]);
 
-  const handleLoadMore = () => {
-    const newCount = displayCount + 4;
-    setDisplayCount(newCount);
-    setDisplayedProfiles(allProfiles.slice(0, newCount));
-  };
-
   const handleFollowClick = (e, profile) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const isFollowing = profile.following;
-
-    if (isFollowing) {
+    if (profile.following) {
       props.onUnfollow(profile.username);
     } else {
       props.onFollow(profile.username);
     }
 
-    // Optimistically update local state
-    setAllProfiles(prev => prev.map(p =>
-      p.username === profile.username ? { ...p, following: !p.following } : p
-    ));
-    setDisplayedProfiles(prev => prev.map(p =>
-      p.username === profile.username ? { ...p, following: !p.following } : p
-    ));
+    // Optimistically update and re-sort
+    const updateAndSort = (prev) => {
+      const newProfiles = prev.map(p =>
+        p.username === profile.username ? { ...p, following: !p.following } : p
+      );
+      newProfiles.sort((a, b) => (a.following ? 1 : 0) - (b.following ? 1 : 0));
+      return newProfiles;
+    };
 
-    // Refetch current user's following list to sync state
-    if (props.currentUser) {
-      setTimeout(() => {
-        agent.Profile.get(props.currentUser.username)
-          .then(res => {
-            const following = new Set(
-              res.profile.following ? 
-              res.profile.following.map((u: any) => u.username) : 
-              []
-            );
-            setFollowingSet(following);
-            setAllProfiles(prev => prev.map(p => ({
-              ...p,
-              following: following.has(p.username)
-            })));
-            setDisplayedProfiles(prev => prev.map(p => ({
-              ...p,
-              following: following.has(p.username)
-            })));
-          })
-          .catch(err => console.error('Error syncing follow state:', err));
-      }, 300);
-    }
+    setAllProfiles(updateAndSort);
+    setDisplayedProfiles(prev => {
+      const updated = updateAndSort([...prev]);
+      return updated.slice(0, displayCount);
+    });
+  };
+
+  const handleLoadMore = () => {
+    const newCount = displayCount + 4;
+    setDisplayCount(newCount);
+    setDisplayedProfiles(allProfiles.slice(0, newCount));
   };
 
   if (loading) {
@@ -159,9 +132,13 @@ const RecommendedProfiles = (props) => {
         <h3>Who to follow</h3>
       </div>
       <div className="profiles-list">
-        {displayedProfiles.map(profile => {
-          return (
-            <Link key={profile.username} to={`/@${profile.username}`} className="profile-item">
+        {displayedProfiles.map(profile => (
+          <div key={profile.username} className="profile-item">
+            <Link to={`/@${profile.username}`} className="profile-link" onClick={(e) => {
+              if (e.target.closest('.follow-btn')) {
+                e.preventDefault();
+              }
+            }}>
               <UserAvatar username={profile.username} image={profile.image} size="sm" />
               <div className="profile-details">
                 <div className="profile-username">
@@ -169,15 +146,15 @@ const RecommendedProfiles = (props) => {
                 </div>
                 <div className="profile-bio">{profile.bio || 'Member of the community'}</div>
               </div>
-              <button
-                className={`follow-btn ${profile.following ? 'following' : ''}`}
-                onClick={(e) => handleFollowClick(e, profile)}
-              >
-                {profile.following ? 'Unfollow' : 'Follow'}
-              </button>
             </Link>
-          );
-        })}
+            <button
+              className={`follow-btn ${profile.following ? 'following' : ''}`}
+              onClick={(e) => handleFollowClick(e, profile)}
+            >
+              {profile.following ? 'Unfollow' : 'Follow'}
+            </button>
+          </div>
+        ))}
       </div>
 
       {displayCount < allProfiles.length && (
@@ -212,6 +189,7 @@ const styles = `
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    min-height: 100px;
   }
 
   .profile-item {
@@ -220,16 +198,23 @@ const styles = `
     gap: 0.75rem;
     padding: 0.5rem;
     border-radius: 8px;
-    text-decoration: none;
     transition: all 0.2s;
     border: 1px solid transparent;
   }
 
   .profile-item:hover {
     background: var(--bg-hover);
-    text-decoration: none;
     border-color: var(--border-color);
     box-shadow: var(--shadow-sm);
+  }
+
+  .profile-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
   }
 
   .profile-details {
@@ -266,6 +251,7 @@ const styles = `
     transition: all 0.2s;
     font-family: 'Rajdhani', sans-serif;
     white-space: nowrap;
+    z-index: 10;
   }
 
   .follow-btn:hover {

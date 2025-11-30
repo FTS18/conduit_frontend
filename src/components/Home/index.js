@@ -33,6 +33,14 @@ const mapDispatchToProps = dispatch => ((
 
 class Home extends React.Component {
   componentWillMount() {
+    this.loadHome();
+  }
+
+  componentDidMount() {
+    this.loadHome();
+  }
+
+  loadHome = () => {
     const tab = this.props.token ? 'feed' : 'all';
 
     const articlesPromise = this.props.token ?
@@ -98,19 +106,17 @@ class Home extends React.Component {
   render() {
     return (
       <div className="home-page">
-        <TagsToolbar />
-
         <div className="home-content">
+          <TagsToolbar />
           <div className="feed-section">
             <MainView />
+            <footer className="footer">
+              <div className="container">
+                <p>&copy; 2025 Conduit. All rights reserved.</p>
+              </div>
+            </footer>
           </div>
         </div>
-
-        <footer className="footer">
-          <div className="container">
-            <p>&copy; 2025 Conduit. All rights reserved.</p>
-          </div>
-        </footer>
 
         <style>{`
           .home-page {
@@ -124,19 +130,26 @@ class Home extends React.Component {
           .tags-toolbar {
             position: fixed;
             top: 56px;
-            left: 280px;
-            right: 360px;
+            left: 25%;
+            right: 25%;
             z-index: 999;
-            width: calc(100% - 640px);
+            width: 50%;
+            background: rgba(0, 0, 0, 0.25);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           }
 
           .home-content {
             display: flex;
             gap: 0;
             padding: 0;
-            margin-top: 56px;
-            width: 100%;
-            min-height: calc(100vh - 56px);
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0rem;
+            width: auto;
+            height: auto;
             box-sizing: border-box;
           }
 
@@ -144,21 +157,25 @@ class Home extends React.Component {
             flex: 1;
             min-width: 0;
             box-sizing: border-box;
-            padding: 2rem;
+            padding: 5rem 1rem 2rem 2rem;
             width: 100%;
-            margin-top: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
           }
 
           .footer {
             background: var(--bg-card);
             border-top: 1px solid var(--border-color);
             padding: 3rem 0;
-            margin-top: 4rem;
+            margin-top: auto;
             text-align: center;
             color: var(--text-secondary);
             font-size: 0.9rem;
             position: relative;
-            width: 100%;
+            width: calc(100% + 4rem);
+            margin-left: -2rem;
+            margin-right: -2rem;
             box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3);
           }
 

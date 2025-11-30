@@ -14,13 +14,14 @@ class GlobalSidebar extends React.Component {
             position: fixed;
             top: 56px;
             right: 0;
-            width: 360px;
+            width: 25%;
             height: calc(100vh - 56px);
             overflow-y: auto;
             scrollbar-width: none;
             -ms-overflow-style: none;
             background: var(--bg-card);
             border-left: 1px solid var(--border-color);
+            box-shadow: -2px 0 16px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             box-sizing: border-box;
             z-index: 100;

@@ -3,6 +3,7 @@ import React from 'react';
 import agent from '../../agent';
 import { connect } from 'react-redux';
 import { CHANGE_TAB } from '../../constants/actionTypes';
+import UserAvatar from '../UserAvatar';
 
 const YourFeedTab = props => {
   if (props.token) {
@@ -60,7 +61,8 @@ const TagFilterTab = props => {
 const mapStateToProps = state => (({
   ...state.articleList,
   tags: state.home.tags,
-  token: state.common.token
+  token: state.common.token,
+  currentUser: state.common.currentUser
 }));
 
 const mapDispatchToProps = dispatch => (({
@@ -68,41 +70,65 @@ const mapDispatchToProps = dispatch => (({
 }));
 
 class MainView extends React.Component {
-  state = { postContent: '' };
+  state = { postContent: '', isPosting: false };
 
   handlePostChange = (e) => {
     this.setState({ postContent: e.target.value });
   };
 
-  handlePostSubmit = () => {
-    if (this.state.postContent.trim()) {
-      // Post submission logic here
+  handlePostSubmit = async () => {
+    const { postContent } = this.state;
+    if (!postContent.trim() || this.state.isPosting) return;
+
+    this.setState({ isPosting: true });
+    try {
+      await agent.Articles.create({
+        title: postContent.substring(0, 50) + (postContent.length > 50 ? '...' : ''),
+        description: postContent.substring(0, 100),
+        body: postContent,
+        tagList: []
+      });
       this.setState({ postContent: '' });
+      this.props.onTabClick(this.props.tab, null, this.props.tab === 'feed' ? agent.Articles.combinedFeed() : agent.Articles.all());
+    } catch (err) {
+      console.error('Failed to create post:', err);
+    } finally {
+      this.setState({ isPosting: false });
     }
   };
 
   render() {
     const { props } = this;
+    const { postContent, isPosting } = this.state;
     return (
       <div className="col-md-9" style={{ width: '100%', maxWidth: 'none' }}>
-        <div className="whats-happening-box">
-          <textarea
-            placeholder="What's happening?!"
-            value={this.state.postContent}
-            onChange={this.handlePostChange}
-            className="post-textarea"
-            rows="3"
-          />
-          <div className="post-actions">
-            <button
-              className="post-btn"
-              onClick={this.handlePostSubmit}
-              disabled={!this.state.postContent.trim()}
-            >
-              Post
-            </button>
+        {props.token && (
+          <div className="whats-happening-box">
+            <div className="quick-post-header">
+              <UserAvatar
+                username={props.currentUser?.username}
+                image={props.currentUser?.image}
+                size="md"
+              />
+              <textarea
+                placeholder="What's happening?!"
+                value={postContent}
+                onChange={this.handlePostChange}
+                className="post-textarea"
+                rows="3"
+              />
+            </div>
+            <div className="post-actions">
+              <button
+                className="post-btn"
+                onClick={this.handlePostSubmit}
+                disabled={!postContent.trim() || isPosting}
+              >
+                {isPosting ? 'Posting...' : 'Post'}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="feed-toggle-container">
           <ul className="feed-toggle">

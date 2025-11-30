@@ -14,7 +14,9 @@ import {
   PROFILE_FAVORITES_PAGE_UNLOADED,
   SETTINGS_PAGE_UNLOADED,
   LOGIN_PAGE_UNLOADED,
-  REGISTER_PAGE_UNLOADED
+  REGISTER_PAGE_UNLOADED,
+  FOLLOW_USER,
+  UNFOLLOW_USER
 } from '../constants/actionTypes';
 
 const defaultState = {
@@ -55,6 +57,22 @@ export default (state = defaultState, action) => {
       };
     case DELETE_ARTICLE:
       return { ...state, redirectTo: '/' };
+    case FOLLOW_USER:
+      return {
+        ...state,
+        currentUser: state.currentUser ? {
+          ...state.currentUser,
+          followingCount: (state.currentUser.followingCount || 0) + 1
+        } : state.currentUser
+      };
+    case UNFOLLOW_USER:
+      return {
+        ...state,
+        currentUser: state.currentUser ? {
+          ...state.currentUser,
+          followingCount: Math.max(0, (state.currentUser.followingCount || 0) - 1)
+        } : state.currentUser
+      };
     case ARTICLE_PAGE_UNLOADED:
     case EDITOR_PAGE_UNLOADED:
     case HOME_PAGE_UNLOADED:

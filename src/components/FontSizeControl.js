@@ -55,7 +55,7 @@ const FontSizeControl = () => {
         }
 
         .font-size-label {
-          font-size: 0.9rem;
+          font-size: 1rem;
           color: var(--text-secondary);
           font-weight: 500;
         }

@@ -3,6 +3,7 @@ import React from 'react';
 import marked from 'marked';
 import agent from '../agent';
 import { connect } from 'react-redux';
+import '../styles/layout.css';
 import {
   ADD_TAG,
   EDITOR_PAGE_LOADED,
@@ -95,7 +96,8 @@ class Editor extends React.Component {
 
   render() {
     return (
-      <div className="editor-page">
+      <div className="editor-content">
+        <div className="content-section">
         <div className="editor-main">
           <ListErrors errors={this.props.errors}></ListErrors>
 
@@ -186,22 +188,36 @@ class Editor extends React.Component {
             </fieldset>
           </form>
         </div>
+        </div>
 
         <style>{`
           .editor-page {
             background: var(--bg-body);
             min-height: 100vh;
-            padding-top: 56px;
+            padding: 2rem;
+          }
+
+          .editor-content {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
           }
 
           .editor-main {
-            max-width: 800px;
-            margin: 0 auto;
             background: var(--bg-card);
             border-radius: 8px;
             padding: 2rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
+            width: 100%;
+            box-sizing: border-box;
           }
 
           .editor-main .form-control {

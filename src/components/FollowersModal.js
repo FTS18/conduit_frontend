@@ -23,18 +23,20 @@ const mapDispatchToProps = dispatch => ({
 const FollowersModal = ({ username, isOpen, onClose, currentUser, onFollow, onUnfollow }) => {
   const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lastUsername, setLastUsername] = useState(null);
 
   useEffect(() => {
-    if (isOpen && username) {
+    if (isOpen && username && username !== lastUsername) {
       setLoading(true);
       agent.Profile.getFollowers(username)
         .then(res => {
           setFollowers(res.followers || []);
+          setLastUsername(username);
         })
         .catch(err => console.error(err))
         .finally(() => setLoading(false));
     }
-  }, [isOpen, username]);
+  }, [isOpen, username, lastUsername]);
 
   const handleFollow = (e, followerUsername) => {
     e.preventDefault();
@@ -49,9 +51,7 @@ const FollowersModal = ({ username, isOpen, onClose, currentUser, onFollow, onUn
     e.preventDefault();
     e.stopPropagation();
     onUnfollow(followerUsername);
-    setFollowers(prev => prev.map(f =>
-      f.username === followerUsername ? { ...f, following: false } : f
-    ));
+    setFollowers(prev => prev.filter(f => f.username !== followerUsername));
   };
 
   if (!isOpen) return null;
@@ -70,21 +70,28 @@ const FollowersModal = ({ username, isOpen, onClose, currentUser, onFollow, onUn
             <div className="followers-empty">No followers yet</div>
           ) : (
             followers.map(follower => (
-              <Link key={follower.username} to={`/@${follower.username}`} className="followers-user-item">
-                <UserAvatar username={follower.username} image={follower.image} size="sm" />
-                <div className="followers-user-info">
-                  <div className="followers-username">{follower.username}</div>
-                  <div className="followers-bio">{follower.bio || 'Member'}</div>
-                </div>
+              <div key={follower.username} className="followers-user-item">
+                <Link to={`/@${follower.username}`} className="followers-user-link" onClick={(e) => e.stopPropagation()}>
+                  <UserAvatar username={follower.username} image={follower.image} size="sm" />
+                  <div className="followers-user-info">
+                    <div className="followers-username">{follower.username}</div>
+                    <div className="followers-bio">{follower.bio || 'Member'}</div>
+                  </div>
+                </Link>
                 {currentUser && currentUser.username !== follower.username && (
                   <button
                     className={`followers-follow-btn ${follower.following ? 'following' : ''}`}
-                    onClick={(e) => follower.following ? handleUnfollow(e, follower.username) : handleFollow(e, follower.username)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      follower.following ? handleUnfollow(e, follower.username) : handleFollow(e, follower.username);
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
                     {follower.following ? 'Unfollow' : 'Follow'}
                   </button>
                 )}
-              </Link>
+              </div>
             ))
           )}
         </div>
@@ -198,13 +205,20 @@ const styles = `
     padding: 0.75rem 1rem;
     margin: 0 0.5rem;
     border-radius: 8px;
-    text-decoration: none;
     transition: all 0.2s ease;
-    cursor: pointer;
   }
 
   .followers-user-item:hover {
     background: var(--bg-hover);
+  }
+
+  .followers-user-link {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
   }
 
   .followers-user-info {
@@ -242,6 +256,7 @@ const styles = `
     transition: all 0.25s ease;
     white-space: nowrap;
     flex-shrink: 0;
+    z-index: 10;
   }
 
   .followers-follow-btn:hover {

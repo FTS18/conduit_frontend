@@ -1,0 +1,141 @@
+/* Global Layout Styles */
+
+/* Sidebars */
+.sidebar-nav,
+.global-sidebar {
+  position: fixed;
+  top: 64px;
+  width: 25%;
+  height: calc(100vh - 64px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-nav {
+  left: 0;
+  border-right: 1px solid var(--border-color);
+  border-left: none;
+}
+
+.global-sidebar {
+  right: 0;
+  border-left: 1px solid var(--border-color);
+  border-right: none;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* Main Content Area */
+.main-content,
+.home-content,
+.article-content,
+.profile-content,
+.editor-content {
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  top: 56px;
+  width: auto;
+  height: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Feed/Content Section */
+.feed-section,
+.content-section {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 5rem 1rem 2rem 2rem;
+  width: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar */
+.desktop-navbar,
+.navbar {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  height: 56px;
+  align-items: center;
+  padding: 0;
+  backdrop-filter: blur(20px);
+}
+
+/* Toolbar */
+.tags-toolbar,
+.toolbar {
+  position: fixed;
+  top: 56px;
+  left: 25%;
+  right: 25%;
+  z-index: 999;
+  width: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Footer */
+.footer {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  padding: 3rem 0;
+  margin-top: auto;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  position: relative;
+  width: calc(100% + 4rem);
+  margin-left: -2rem;
+  margin-right: -2rem;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar-nav,
+  .global-sidebar {
+    display: none;
+  }
+
+  .main-content,
+  .home-content,
+  .article-content,
+  .profile-content,
+  .editor-content {
+    position: relative;
+    left: 0;
+    right: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .tags-toolbar,
+  .toolbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  .feed-section,
+  .content-section {
+    padding: 1rem;
+  }
+}
