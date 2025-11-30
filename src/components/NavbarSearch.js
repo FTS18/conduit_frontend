@@ -52,8 +52,12 @@ const NavbarSearch = () => {
           const results = await agent.Articles.search(query.toLowerCase());
           const articles = results.articles || [];
 
+          // Also try to find users directly if possible, or rely on article authors
+          // Ideally we need a specific user search endpoint
           const uniqueAuthors = [];
           const seenAuthors = new Set();
+
+          // Add authors from found articles
           articles.forEach(article => {
             if (!seenAuthors.has(article.author.username)) {
               seenAuthors.add(article.author.username);

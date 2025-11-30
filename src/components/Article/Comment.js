@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import UserAvatar from '../UserAvatar';
 import agent from '../../agent';
@@ -33,7 +34,9 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
           <div className="comment-author">
             <UserAvatar username={comment.author.username} image={comment.author.image} size="sm" />
             <div className="author-info">
-              <div className="author-name">{comment.author.username}</div>
+              <Link to={`/@${comment.author.username}`} className="author-name">
+                {comment.author.username}
+              </Link>
               <div className="comment-date">
                 {new Date(comment.createdAt).toLocaleDateString()}
               </div>
@@ -152,6 +155,12 @@ const Comment = ({ comment, currentUser, slug, onReply, onUpvote, onDownvote }) 
           font-weight: 600;
           color: var(--text-main);
           font-size: 0.95rem;
+          text-decoration: none;
+        }
+        
+        .author-name:hover {
+          color: var(--primary);
+          text-decoration: underline;
         }
 
         .comment-date {
