@@ -25,70 +25,91 @@ const mapDispatchToProps = dispatch => ({
 
 const RecommendedProfiles = (props) => {
   const { currentUser, showOnlyOnHome = false, articleAuthor, viewedProfile } = props;
-  const [profiles, setProfiles] = useState([]);
+  const [allProfiles, setAllProfiles] = useState([]);
+  const [displayedProfiles, setDisplayedProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [displayCount, setDisplayCount] = useState(4);
+  const [followingSet, setFollowingSet] = useState(new Set());
 
   useEffect(() => {
     if (showOnlyOnHome && window.location.pathname.includes('/article/')) {
-      setProfiles([]);
+      setAllProfiles([]);
+      setDisplayedProfiles([]);
       setLoading(false);
       return;
     }
 
     const fetchProfiles = async () => {
       try {
-        let allProfiles = [];
-        let isFromAPI = false;
-        try {
-          const profilesResult = await agent.Profile.getAllUsers();
-          allProfiles = profilesResult.profiles || profilesResult.users || [];
-          if (allProfiles.length > 0) {
-            isFromAPI = true;
-          }
-        } catch (err) {
-          // Profile API not available, falling back to article authors
-        }
+        const profilesResult = await agent.Profile.getAllUsers();
+        let profiles = profilesResult.profiles || profilesResult.users || [];
 
-        if (allProfiles.length === 0) {
-          const articlesResult = await agent.Articles.all();
-          const articles = articlesResult.articles || [];
+        // Filter out current user
+        profiles = profiles.filter(p => !currentUser || p.username !== currentUser.username);
 
-          const seenUsernames = new Set();
-          articles.forEach(article => {
-            if (article.author && !seenUsernames.has(article.author.username)) {
-              if (!currentUser || article.author.username !== currentUser.username) {
-                seenUsernames.add(article.author.username);
-                allProfiles.push({
-                  username: article.author.username,
-                  bio: article.author.bio || 'Writer and content creator',
-                  image: article.author.image,
-                  following: article.author.following // Preserve following status
-                });
-              }
-            }
-          });
-        }
+        // Get current user's following list
+        if (currentUser) {
+          const currentUserProfile = await agent.Profile.get(currentUser.username);
+          const following = new Set(
+            currentUserProfile.profile.following ? 
+            currentUserProfile.profile.following.map((u: any) => u.username) : 
+            []
+          );
+          setFollowingSet(following);
 
-        const filteredProfiles = allProfiles
-          .filter(profile => !currentUser || profile.username !== currentUser.username)
-          .slice(0, 6)
-          .map(profile => ({
-            ...profile,
-            bio: profile.bio || (isFromAPI ? 'Member of the community' : 'Writer and content creator'),
-            joinDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000)
+          // Mark profiles as following
+          profiles = profiles.map(p => ({
+            ...p,
+            following: following.has(p.username)
           }));
+        }
 
-        setProfiles(filteredProfiles);
+        setAllProfiles(profiles);
+        setDisplayedProfiles(profiles.slice(0, 4));
       } catch (err) {
-
-        setProfiles([]);
+        console.error('Error fetching profiles:', err);
+        setAllProfiles([]);
+        setDisplayedProfiles([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfiles();
-  }, [currentUser, showOnlyOnHome]); // Added showOnlyOnHome to dependency array
+  }, [currentUser, showOnlyOnHome]);
+
+  const handleLoadMore = () => {
+    const newCount = displayCount + 4;
+    setDisplayCount(newCount);
+    setDisplayedProfiles(allProfiles.slice(0, newCount));
+  };
+
+  const handleFollowClick = (e, profile) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const isFollowing = profile.following;
+
+    if (isFollowing) {
+      props.onUnfollow(profile.username);
+      setFollowingSet(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(profile.username);
+        return newSet;
+      });
+    } else {
+      props.onFollow(profile.username);
+      setFollowingSet(prev => new Set(prev).add(profile.username));
+    }
+
+    // Optimistically update local state
+    setAllProfiles(prev => prev.map(p =>
+      p.username === profile.username ? { ...p, following: !p.following } : p
+    ));
+    setDisplayedProfiles(prev => prev.map(p =>
+      p.username === profile.username ? { ...p, following: !p.following } : p
+    ));
+  };
 
   if (loading) {
     return (
@@ -102,7 +123,7 @@ const RecommendedProfiles = (props) => {
     );
   }
 
-  if (profiles.length === 0) {
+  if (allProfiles.length === 0) {
     return (
       <div className="recommended-profiles">
         <div className="profiles-header">
@@ -120,33 +141,7 @@ const RecommendedProfiles = (props) => {
         <h3>Who to follow</h3>
       </div>
       <div className="profiles-list">
-        {profiles.slice(0, 4).map(profile => {
-          // Determine effective following status from global state if available
-          let isFollowing = profile.following;
-
-          if (articleAuthor && articleAuthor.username === profile.username) {
-            isFollowing = articleAuthor.following;
-          } else if (viewedProfile && viewedProfile.username === profile.username) {
-            isFollowing = viewedProfile.following;
-          }
-
-          const handleClick = (e) => {
-            e.preventDefault();
-            if (isFollowing) {
-              props.onUnfollow(profile.username);
-              // Optimistically update local state
-              setProfiles(prev => prev.map(p =>
-                p.username === profile.username ? { ...p, following: false } : p
-              ));
-            } else {
-              props.onFollow(profile.username);
-              // Optimistically update local state
-              setProfiles(prev => prev.map(p =>
-                p.username === profile.username ? { ...p, following: true } : p
-              ));
-            }
-          };
-
+        {displayedProfiles.map(profile => {
           return (
             <Link key={profile.username} to={`/@${profile.username}`} className="profile-item">
               <UserAvatar username={profile.username} image={profile.image} size="sm" />
@@ -154,19 +149,25 @@ const RecommendedProfiles = (props) => {
                 <div className="profile-username">
                   {(profile.username || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </div>
-                <div className="profile-bio">{profile.bio || 'Writer'}</div>
+                <div className="profile-bio">{profile.bio || 'Member of the community'}</div>
               </div>
               <button
-                className={`follow-btn ${isFollowing ? 'following' : ''}`}
-                onClick={handleClick}
+                className={`follow-btn ${profile.following ? 'following' : ''}`}
+                onClick={(e) => handleFollowClick(e, profile)}
               >
-                {isFollowing ? 'Unfollow' : 'Follow'}
+                {profile.following ? 'Unfollow' : 'Follow'}
               </button>
             </Link>
           );
         })}
       </div>
-      <Link to="/explore" className="see-more">See more suggestions</Link>
+
+      {displayCount < allProfiles.length && (
+        <button className="load-more-btn" onClick={handleLoadMore}>
+          Load More
+        </button>
+      )}
+
       <style>{styles}</style>
     </div>
   );
@@ -246,6 +247,7 @@ const styles = `
     cursor: pointer;
     transition: all 0.2s;
     font-family: 'Rajdhani', sans-serif;
+    white-space: nowrap;
   }
 
   .follow-btn:hover {
@@ -264,23 +266,26 @@ const styles = `
     color: var(--text-main);
   }
 
-  .see-more {
+  .load-more-btn {
     display: block;
+    width: 100%;
     text-align: center;
     color: var(--primary);
-    text-decoration: none;
+    background: transparent;
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    padding: 0.6rem;
     font-size: calc(0.9rem * var(--font-scale));
     font-weight: 500;
     margin-top: 0.75rem;
-    padding: 0.5rem;
-    border-radius: 6px;
+    cursor: pointer;
     transition: all 0.2s;
     font-family: 'Rajdhani', sans-serif;
   }
 
-  .see-more:hover {
-    background: var(--bg-hover);
-    text-decoration: none;
+  .load-more-btn:hover {
+    background: var(--primary);
+    color: var(--bg-body);
   }
 
   .loading {
@@ -315,6 +320,11 @@ const styles = `
     .follow-btn {
       padding: 0.3rem 0.6rem;
       font-size: calc(0.75rem * var(--font-scale));
+    }
+
+    .load-more-btn {
+      padding: 0.5rem;
+      font-size: calc(0.85rem * var(--font-scale));
     }
   }
 `;

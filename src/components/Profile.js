@@ -1,4 +1,7 @@
 import ArticleList from './ArticleList';
+import CommentList from './CommentList';
+import FollowersModal from './FollowersModal';
+import FollowingModal from './FollowingModal';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import agent from '../agent';
@@ -65,15 +68,24 @@ const mapDispatchToProps = dispatch => ({
 });
 
 class Profile extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showFollowersModal: false,
+      showFollowingModal: false,
+    };
+  }
+
   componentWillMount() {
     this.loadProfile();
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.match.params.username !== nextProps.match.params.username ||
-      this.props.match.params.tab !== nextProps.match.params.tab) {
+    if (this.props.match.params.username !== nextProps.match.params.username) {
       this.props.onUnload();
       this.loadProfile(nextProps);
+    } else if (this.props.match.params.tab !== nextProps.match.params.tab) {
+      this.loadTabData(nextProps);
     }
   }
 
@@ -81,7 +93,6 @@ class Profile extends React.Component {
     const tab = props.match.params.tab || 'articles';
     let articlesPromise;
 
-    // Always fetch the total count of articles by this author
     const countPromise = agent.Articles.byAuthor(props.match.params.username)
       .then(res => res.articlesCount);
 
@@ -90,15 +101,7 @@ class Profile extends React.Component {
     } else if (tab === 'comments') {
       articlesPromise = agent.Comments.byAuthor(props.match.params.username)
         .then(res => ({
-          articles: (res.comments || []).map(c => ({
-            slug: c.id,
-            title: c.body,
-            description: `On: ${c.article && c.article.title ? c.article.title : 'Unknown'}`,
-            author: c.author,
-            createdAt: c.createdAt,
-            favorited: false,
-            favoritesCount: 0
-          })),
+          comments: res.comments || [],
           articlesCount: res.comments ? res.comments.length : 0
         }));
     } else {
@@ -110,6 +113,31 @@ class Profile extends React.Component {
       articlesPromise,
       countPromise
     ]));
+  }
+
+  loadTabData(props = this.props) {
+    const tab = props.match.params.tab || 'articles';
+    let articlesPromise;
+
+    if (tab === 'liked') {
+      articlesPromise = agent.Articles.favoritedBy(props.match.params.username);
+    } else if (tab === 'comments') {
+      articlesPromise = agent.Comments.byAuthor(props.match.params.username)
+        .then(res => ({
+          comments: res.comments || [],
+          articlesCount: res.comments ? res.comments.length : 0
+        }));
+    } else {
+      articlesPromise = agent.Articles.byAuthor(props.match.params.username);
+    }
+
+    articlesPromise.then(data => {
+      this.props.onLoad(Promise.resolve([
+        { profile: this.props.profile },
+        data,
+        this.props.profile.totalArticlesCount
+      ]));
+    });
   }
 
   componentWillUnmount() {
@@ -161,6 +189,8 @@ class Profile extends React.Component {
     const isUser = this.props.currentUser &&
       this.props.profile.username === this.props.currentUser.username;
 
+    const activeTab = this.getActiveTab();
+
     return (
       <div className="profile-page">
         <div className="profile-card">
@@ -177,14 +207,20 @@ class Profile extends React.Component {
               <div className="stat-value">{profile.totalArticlesCount || 0}</div>
               <div className="stat-label">Articles</div>
             </div>
-            <div className="stat">
+            <button 
+              className="stat stat-clickable"
+              onClick={() => this.setState({ showFollowersModal: true })}
+            >
               <div className="stat-value">{profile.followersCount || 0}</div>
               <div className="stat-label">Followers</div>
-            </div>
-            <div className="stat">
+            </button>
+            <button 
+              className="stat stat-clickable"
+              onClick={() => this.setState({ showFollowingModal: true })}
+            >
               <div className="stat-value">{profile.followingCount || 0}</div>
               <div className="stat-label">Following</div>
-            </div>
+            </button>
           </div>
 
           <div className="profile-actions">
@@ -203,12 +239,31 @@ class Profile extends React.Component {
             {this.renderTabs()}
           </div>
 
-          <ArticleList
-            pager={this.props.pager}
-            articles={this.props.articles}
-            articlesCount={this.props.articlesCount}
-            state={this.props.currentPage} />
+          {activeTab === 'comments' ? (
+            <CommentList
+              comments={this.props.articles}
+              articlesCount={this.props.articlesCount}
+            />
+          ) : (
+            <ArticleList
+              pager={this.props.pager}
+              articles={this.props.articles}
+              articlesCount={this.props.articlesCount}
+              state={this.props.currentPage}
+            />
+          )}
         </div>
+
+        <FollowersModal 
+          username={profile.username}
+          isOpen={this.state.showFollowersModal}
+          onClose={() => this.setState({ showFollowersModal: false })}
+        />
+        <FollowingModal 
+          username={profile.username}
+          isOpen={this.state.showFollowingModal}
+          onClose={() => this.setState({ showFollowingModal: false })}
+        />
 
         <style>{`
           .profile-page {
@@ -263,6 +318,19 @@ class Profile extends React.Component {
           .stat {
             text-align: center;
             flex: 1;
+            background: none;
+            border: none;
+            cursor: default;
+            padding: 0;
+          }
+
+          .stat-clickable {
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+
+          .stat-clickable:hover {
+            opacity: 0.8;
           }
 
           .stat-value {

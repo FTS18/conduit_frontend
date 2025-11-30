@@ -49,24 +49,16 @@ const NavbarSearch = () => {
 
       debounceTimer.current = setTimeout(async () => {
         try {
-          const results = await agent.Articles.search(query.toLowerCase());
-          const articles = results.articles || [];
+          const [articlesRes, usersRes] = await Promise.all([
+            agent.Articles.search(query.toLowerCase()).catch(() => ({ articles: [] })),
+            agent.Profile.searchUsers(query.toLowerCase()).catch(() => ({ users: [] }))
+          ]);
 
-          // Also try to find users directly if possible, or rely on article authors
-          // Ideally we need a specific user search endpoint
-          const uniqueAuthors = [];
-          const seenAuthors = new Set();
-
-          // Add authors from found articles
-          articles.forEach(article => {
-            if (!seenAuthors.has(article.author.username)) {
-              seenAuthors.add(article.author.username);
-              uniqueAuthors.push(article.author);
-            }
-          });
+          const articles = articlesRes.articles || [];
+          const users = usersRes.users || [];
 
           setSearchResults(articles);
-          setAuthorResults(uniqueAuthors.slice(0, 3));
+          setAuthorResults(users.slice(0, 5));
         } catch (err) {
           console.error('Search error:', err);
           setSearchResults([]);

@@ -86,7 +86,6 @@ const Articles = {
         }
       });
 
-      // If no articles from feed or recommendations, get global articles
       if (combined.length === 0) {
         return requests.get(`/articles?${limit(10, page)}`);
       }
@@ -100,6 +99,8 @@ const Articles = {
     requests.get(`/articles?tag=${encode(tag)}&${limit(10, page)}`),
   search: (query) =>
     requests.get(`/articles?search=${encode(query)}&${limit(10, 0)}`),
+  byDateRange: (fromDate, toDate) =>
+    requests.get(`/articles?fromDate=${fromDate}&toDate=${toDate}&${limit(10, 0)}`),
   trending: (timeframe = 'week') =>
     requests.get(`/articles/trending?timeframe=${timeframe}&${limit(10, 0)}`),
   del: slug =>
@@ -156,15 +157,19 @@ const Profile = {
     requests.del(`/profiles/${username}/block`),
   getAllUsers: () =>
     requests.get('/profiles'),
+  searchUsers: (query) =>
+    requests.get(`/profiles?search=${encode(query)}`),
+  getFollowers: (username) =>
+    requests.get(`/profiles/${username}/followers`),
+  getFollowing: (username) =>
+    requests.get(`/profiles/${username}/following`),
   getComments: username => {
-    // Workaround: Get recent articles and fetch comments from all of them
     return requests.get(`/articles?limit=50`)
       .then(articlesResponse => {
         if (!articlesResponse.articles || articlesResponse.articles.length === 0) {
           return { comments: [] };
         }
 
-        // Get comments from all recent articles and filter by username
         const commentPromises = articlesResponse.articles.map(article =>
           requests.get(`/articles/${article.slug}/comments`)
             .then(commentsResponse =>
@@ -193,8 +198,8 @@ const Profile = {
 };
 
 const Notifications = {
-  getAll: () =>
-    requests.get('/notifications'),
+  getAll: (type) =>
+    requests.get(`/notifications${type ? `?type=${type}` : ''}`),
   markRead: (id) =>
     requests.put(`/notifications/${id}/read`, {})
 };
