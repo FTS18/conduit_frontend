@@ -35,10 +35,11 @@ class Login extends React.Component {
 
     this.handleGoogleLogin = async () => {
       try {
-        const { error } = await supabase.auth.signIn({
-          provider: 'google'
-        }, {
-          redirectTo: `${window.location.origin}/`
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/`
+          }
         });
         if (error) throw error;
       } catch (error) {
