@@ -1,5 +1,6 @@
 import ListErrors from './ListErrors';
 import React from 'react';
+import marked from 'marked';
 import agent from '../agent';
 import { connect } from 'react-redux';
 import {
@@ -33,6 +34,7 @@ const mapDispatchToProps = dispatch => (({
 class Editor extends React.Component {
   constructor() {
     super();
+    this.state = { activeTab: 'write' };
 
     const updateFieldEvent =
       key => ev => this.props.onUpdateField(key, ev.target.value);
@@ -118,14 +120,35 @@ class Editor extends React.Component {
                   onChange={this.changeDescription} />
               </fieldset>
 
+              <div className="editor-tabs">
+                <button
+                  type="button"
+                  className={`editor-tab ${this.state.activeTab === 'write' ? 'active' : ''}`}
+                  onClick={() => this.setState({ activeTab: 'write' })}
+                >
+                  Write
+                </button>
+                <button
+                  type="button"
+                  className={`editor-tab ${this.state.activeTab === 'preview' ? 'active' : ''}`}
+                  onClick={() => this.setState({ activeTab: 'preview' })}
+                >
+                  Preview
+                </button>
+              </div>
+
               <fieldset className="form-group">
-                <textarea
-                  className="form-control"
-                  rows="8"
-                  placeholder="Write your article (in markdown)"
-                  value={this.props.body}
-                  onChange={this.changeBody}>
-                </textarea>
+                {this.state.activeTab === 'write' ? (
+                  <textarea
+                    className="form-control"
+                    rows="8"
+                    placeholder="Write your article (in markdown)"
+                    value={this.props.body}
+                    onChange={this.changeBody}>
+                  </textarea>
+                ) : (
+                  <div className="markdown-preview" dangerouslySetInnerHTML={{ __html: marked(this.props.body || '') }}></div>
+                )}
               </fieldset>
 
               <fieldset className="form-group">
@@ -136,6 +159,7 @@ class Editor extends React.Component {
                   value={this.props.tagInput}
                   onChange={this.changeTagInput}
                   onKeyUp={this.watchForEnter} />
+                <div className="tag-help-text">Press Enter to add a tag</div>
 
                 <div className="tag-list">
                   {(this.props.tagList || []).map(tag => {
@@ -280,6 +304,84 @@ class Editor extends React.Component {
             .pull-xs-right {
               float: none !important;
             }
+          }
+
+          .editor-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+          }
+
+          .editor-tab {
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+          }
+
+          .editor-tab:hover {
+            background: var(--bg-hover);
+            color: var(--primary);
+          }
+
+          .editor-tab.active {
+            background: var(--bg-hover);
+            color: var(--primary);
+          }
+
+          .markdown-preview {
+            min-height: 200px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-body);
+            color: var(--text-main);
+            overflow-y: auto;
+            line-height: 1.6;
+          }
+
+          .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+          }
+
+          .markdown-preview p {
+            margin-bottom: 1rem;
+          }
+
+          .markdown-preview ul, .markdown-preview ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+          }
+
+          .markdown-preview code {
+            background: var(--bg-hover);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+          }
+
+          .markdown-preview pre {
+            background: var(--bg-hover);
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+          }
+
+          .tag-help-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            margin-left: 0.25rem;
           }
         `}</style>
       </div>
