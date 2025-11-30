@@ -15,6 +15,7 @@ import Profile from '../components/Profile';
 import ReadingList from '../components/ReadingList';
 import Register from '../components/Register';
 import Settings from '../components/Settings';
+import AuthCallback from '../components/AuthCallback';
 import { store } from '../store';
 import { push } from 'react-router-redux';
 
@@ -71,6 +72,7 @@ class App extends React.Component {
               <Route exact path="/" component={Home} />
               <Route path="/login" component={Login} />
               <Route path="/register" component={Register} />
+              <Route path="/auth/callback" component={AuthCallback} />
               <Route path="/editor/:slug" component={Editor} />
               <Route path="/editor" component={Editor} />
               <Route path="/article/:id" component={Article} />
