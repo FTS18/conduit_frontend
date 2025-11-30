@@ -31,7 +31,7 @@ class Notifications extends React.Component {
   }
 
   getNotificationIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'mention':
         return '💬';
       case 'follow':
@@ -46,15 +46,18 @@ class Notifications extends React.Component {
   };
 
   getNotificationMessage = (notif) => {
-    switch(notif.type) {
+    const formatName = (name) => (name || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const actorName = formatName(notif.actor.username);
+
+    switch (notif.type) {
       case 'mention':
-        return `${notif.actor.username} mentioned you in a comment`;
+        return `${actorName} mentioned you in a comment`;
       case 'follow':
-        return `${notif.actor.username} started following you`;
+        return `${actorName} started following you`;
       case 'favorite':
-        return `${notif.actor.username} favorited your article`;
+        return `${actorName} favorited your article`;
       case 'comment':
-        return `${notif.actor.username} commented on your article`;
+        return `${actorName} commented on your article`;
       default:
         return notif.message;
     }
@@ -82,7 +85,7 @@ class Notifications extends React.Component {
                   <div className="notification-content">
                     <div className="notification-header">
                       <Link to={`/@${notif.actor.username}`} className="actor-name">
-                        {notif.actor.username}
+                        {(notif.actor.username || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </Link>
                       <span className="notification-time">
                         {new Date(notif.createdAt).toLocaleDateString()}
