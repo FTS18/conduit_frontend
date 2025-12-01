@@ -142,6 +142,23 @@ class SearchBar extends React.Component {
           @media (max-width: 768px) {
             .search-bar {
               max-width: 100%;
+              width: 100%;
+              flex: 1;
+            }
+
+            .search-input {
+              width: 100%;
+            }
+
+            .search-results {
+              position: fixed;
+              top: 56px;
+              left: 0;
+              right: 0;
+              width: 100vw;
+              border-radius: 0;
+              max-height: calc(100vh - 116px);
+              margin-top: 0;
             }
           }
         `}</style>

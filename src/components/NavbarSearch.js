@@ -210,7 +210,7 @@ const NavbarSearch = () => {
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
           max-height: 500px;
           overflow-y: auto;
-          z-index: 1000;
+          z-index: 1002;
           padding: 0.5rem 0;
         }
 
@@ -284,12 +284,21 @@ const NavbarSearch = () => {
 
         @media (max-width: 768px) {
           .navbar-search-wrapper {
-            max-width: 200px;
-            margin: 0 1rem;
+            flex: 1;
+            max-width: none;
+            margin: 0 0.5rem 0 -1.85rem;
           }
 
           .navbar-search-results {
-            max-height: 400px;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            width: 100vw;
+            border-radius: 0;
+            max-height: calc(100vh - 116px);
+            margin: 0;
+            z-index: 1002;
           }
         }
       `}</style>

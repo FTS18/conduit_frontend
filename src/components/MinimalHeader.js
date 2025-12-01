@@ -36,7 +36,8 @@ const MinimalHeader = ({ appName, currentUser }) => {
     <nav className="minimal-navbar">
       <div className="navbar-content">
         <Link to="/" className="navbar-brand">
-          {appName}
+          <span className="brand-full">{appName}</span>
+          <span className="brand-mobile">CND</span>
         </Link>
 
         <NavbarSearch />
@@ -132,6 +133,10 @@ const MinimalHeader = ({ appName, currentUser }) => {
           text-decoration: none;
           letter-spacing: -1px;
           text-transform: uppercase;
+        }
+
+        .brand-mobile {
+          display: none;
         }
 
         .navbar-brand:hover {
@@ -260,16 +265,31 @@ const MinimalHeader = ({ appName, currentUser }) => {
         @media (max-width: 768px) {
           .minimal-navbar {
             height: 56px;
+            z-index: 1001;
           }
 
           .navbar-content {
             padding: 0 0.5rem;
-            gap: 0.5rem;
+            gap: 0;
+            flex-wrap: nowrap;
           }
 
-          .navbar-brand {
-            font-size: 1.2rem;
+          .brand-full {
+            display: none;
+          }
+
+          .brand-mobile {
+            display: inline;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            font-weight: 900;
+            line-height: 1;
+            height: 20px;
+            display: flex;
+            align-items: center;
             flex-shrink: 0;
+            cursor: pointer;
+            padding: 0 0.5rem;
           }
 
           .font-controls {
@@ -277,8 +297,9 @@ const MinimalHeader = ({ appName, currentUser }) => {
           }
 
           .navbar-controls {
-            gap: 0.5rem;
+            gap: 0.25rem;
             margin-left: auto;
+            flex-shrink: 0;
           }
 
           .theme-toggle {

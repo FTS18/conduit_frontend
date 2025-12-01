@@ -104,29 +104,20 @@ class MainView extends React.Component {
       <div className="col-md-9" style={{ width: '100%', maxWidth: 'none' }}>
         {props.token && (
           <div className="whats-happening-box">
-            <div className="quick-post-header">
-              <UserAvatar
-                username={props.currentUser?.username}
-                image={props.currentUser?.image}
-                size="md"
-              />
-              <textarea
-                placeholder="What's happening?!"
-                value={postContent}
-                onChange={this.handlePostChange}
-                className="post-textarea"
-                rows="3"
-              />
-            </div>
-            <div className="post-actions">
-              <button
-                className="post-btn"
-                onClick={this.handlePostSubmit}
-                disabled={!postContent.trim() || isPosting}
-              >
-                {isPosting ? 'Posting...' : 'Post'}
-              </button>
-            </div>
+            <textarea
+              placeholder="What's happening?!"
+              value={postContent}
+              onChange={this.handlePostChange}
+              className="post-textarea"
+              rows="3"
+            />
+            <button
+              className="post-btn"
+              onClick={this.handlePostSubmit}
+              disabled={!postContent.trim() || isPosting}
+            >
+              {isPosting ? 'Posting...' : 'Post'}
+            </button>
           </div>
         )}
 
@@ -154,11 +145,14 @@ class MainView extends React.Component {
           .whats-happening-box {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 16px;
+            padding: 1.5rem;
             margin-bottom: 1.5rem;
             width: 100%;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
           }
 
           .post-textarea {
@@ -185,18 +179,14 @@ class MainView extends React.Component {
             color: var(--text-light);
           }
 
-          .post-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 0.75rem;
-          }
-
           .post-btn {
+            width: 100%;
+            box-sizing: border-box;
             background: var(--primary);
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 0.5rem 1.5rem;
+            padding: 0.75rem 1.5rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -270,13 +260,22 @@ class MainView extends React.Component {
 
           @media (max-width: 768px) {
             .whats-happening-box {
-              margin-bottom: 1rem;
-              padding: 0.75rem;
+              margin: 0;
+              padding: 1rem;
+              border-radius: 0;
+              background: var(--bg-hover);
+              border: none;
+              gap: 0.5rem;
             }
 
             .post-textarea {
-              padding: 0.625rem;
+              padding: 0.75rem;
               font-size: 0.9rem;
+              border-radius: 0;
+            }
+
+            .post-btn {
+              border-radius: 0;
             }
 
             .feed-toggle-container {

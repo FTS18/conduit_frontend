@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 import agent from '../agent';
-import UserAvatar from './UserAvatar';
 
 const mapStateToProps = state => ({
     currentUser: state.common.currentUser
@@ -39,35 +37,20 @@ const QuickPostBox = ({ currentUser }) => {
 
     return (
         <div className="quick-post-box">
-            <div className="quick-post-header">
-                <UserAvatar
-                    username={currentUser.username}
-                    image={currentUser.image}
-                    size="md"
-                />
-                <div className="quick-post-input">
-                    <textarea
-                        placeholder="What's happening?"
-                        value={postText}
-                        onChange={(e) => setPostText(e.target.value)}
-                        maxLength={500}
-                    />
-                </div>
-            </div>
-            <div className="quick-post-actions">
-                <div className="quick-post-icons">
-                    <Link to="/editor" className="quick-post-icon-btn" title="Write full article">
-                        <i className="ion-compose"></i>
-                    </Link>
-                </div>
-                <button
-                    className="quick-post-btn"
-                    onClick={handlePost}
-                    disabled={!postText.trim() || isPosting}
-                >
-                    {isPosting ? 'Posting...' : 'Post'}
-                </button>
-            </div>
+            <textarea
+                className="quick-post-textarea"
+                placeholder="What's happening?"
+                value={postText}
+                onChange={(e) => setPostText(e.target.value)}
+                maxLength={500}
+            />
+            <button
+                className="quick-post-btn"
+                onClick={handlePost}
+                disabled={!postText.trim() || isPosting}
+            >
+                {isPosting ? 'Posting...' : 'Post'}
+            </button>
         </div>
     );
 };

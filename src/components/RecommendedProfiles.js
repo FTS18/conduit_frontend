@@ -40,10 +40,8 @@ const RecommendedProfiles = (props) => {
         const result = await agent.Profile.getAllUsers();
         let profiles = result.users || [];
 
-        // Filter out current user
         profiles = profiles.filter(p => !currentUser || p.username !== currentUser.username);
 
-        // Fetch current user's following list
         if (currentUser) {
           const followingRes = await agent.Profile.getFollowing(currentUser.username);
           const followingUsernames = new Set((followingRes.following || []).map(u => u.username));
@@ -53,7 +51,6 @@ const RecommendedProfiles = (props) => {
           }));
         }
 
-        // Sort: unfollowed first, then followed
         profiles.sort((a, b) => (a.following ? 1 : 0) - (b.following ? 1 : 0));
         setAllProfiles(profiles);
         setDisplayedProfiles(profiles.slice(0, 4));
@@ -80,7 +77,6 @@ const RecommendedProfiles = (props) => {
       props.onFollow(profile.username);
     }
 
-    // Optimistically update and re-sort
     const updateAndSort = (prev) => {
       const newProfiles = prev.map(p =>
         p.username === profile.username ? { ...p, following: !p.following } : p
@@ -155,13 +151,12 @@ const RecommendedProfiles = (props) => {
             </button>
           </div>
         ))}
+        {displayCount < allProfiles.length && (
+          <button className="load-more-btn" onClick={handleLoadMore}>
+            Load More
+          </button>
+        )}
       </div>
-
-      {displayCount < allProfiles.length && (
-        <button className="load-more-btn" onClick={handleLoadMore}>
-          Load More
-        </button>
-      )}
 
       <style>{styles}</style>
     </div>
@@ -329,6 +324,60 @@ const styles = `
     .load-more-btn {
       padding: 0.5rem;
       font-size: calc(0.85rem * var(--font-scale));
+    }
+  }
+
+  @media (max-width: 480px) {
+    .profiles-list {
+      flex-direction: row;
+      overflow-x: auto;
+      gap: 1rem;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+    }
+
+    .profiles-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .profile-item {
+      flex: 0 0 calc(50% - 0.5rem);
+      flex-direction: column;
+      text-align: center;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+    }
+
+    .profile-link {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .profile-details {
+      width: 100%;
+    }
+
+    .profile-bio {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+
+    .load-more-btn {
+      flex: 0 0 calc(50% - 0.5rem);
+      margin: 0;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background: var(--bg-hover);
+      color: var(--primary);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 120px;
+      width: auto;
     }
   }
 `;

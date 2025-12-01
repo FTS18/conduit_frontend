@@ -198,7 +198,7 @@ class Home extends React.Component {
 
             .home-content {
               display: block !important;
-              padding: 0.5rem !important;
+              padding: 0 !important;
               margin-top: 0 !important;
               gap: 0 !important;
               width: 100% !important;

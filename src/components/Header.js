@@ -222,11 +222,12 @@ class Header extends React.Component {
           }
 
           .mobile-navbar-top .navbar-brand {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--primary);
             text-decoration: none;
             margin: 0;
+            letter-spacing: 1px;
           }
 
           .mobile-navbar-right {
@@ -345,6 +346,11 @@ class Header extends React.Component {
             body {
               padding-top: 56px;
               padding-bottom: 60px;
+            }
+
+            .mobile-navbar-top .navbar-brand {
+              font-size: 0.75rem;
+              text-transform: uppercase;
             }
           }
 
