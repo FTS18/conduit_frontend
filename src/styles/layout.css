@@ -139,6 +139,11 @@
     right: 0;
     top: 0;
     width: 100%;
+    margin-left: 0;
+    margin-top: 0;
+    max-width: 100%;
+    padding-bottom: 60px;
+    overflow-y: visible;
   }
 
   .tags-toolbar,
@@ -152,5 +157,6 @@
   .feed-section,
   .content-section {
     padding: 1rem;
+    overflow-y: visible !important;
   }
 }

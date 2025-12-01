@@ -44,19 +44,21 @@ const TagsToolbar = ({ tags, currentTag, onClickTag }) => {
       <style jsx>{`
         .tags-toolbar {
           position: fixed;
-          top: 56px;
+          bottom: 0;
           left: 0;
           right: 0;
           background: var(--bg-card);
-          border-bottom: 1px solid var(--border-color);
-          z-index: 999;
+          border-top: 1px solid var(--border-color);
+          z-index: 1000;
           width: 100%;
+          height: fit-content;
+          box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
         }
         
         .tags-scroll {
           display: flex;
           align-items: center;
-          height: 48px;
+          height: 40px;
           overflow-x: auto;
           overflow-y: hidden;
           scrollbar-width: none;
@@ -69,7 +71,7 @@ const TagsToolbar = ({ tags, currentTag, onClickTag }) => {
         
         .tag-btn {
           flex-shrink: 0;
-          padding: 0.5rem 1rem;
+          padding: 0.25rem 0.75rem;
           background: transparent;
           border: none;
           color: var(--text-secondary);
@@ -80,6 +82,9 @@ const TagsToolbar = ({ tags, currentTag, onClickTag }) => {
           white-space: nowrap;
           outline: none;
           border-bottom: 3px solid transparent;
+          height: 100%;
+          display: flex;
+          align-items: center;
         }
         
         .tag-btn:hover {
@@ -93,7 +98,25 @@ const TagsToolbar = ({ tags, currentTag, onClickTag }) => {
           font-weight: 600;
         }
         
+        @media (min-width: 769px) {
+          .tags-toolbar {
+            bottom: 0 !important;
+            top: auto !important;
+            left: 25% !important;
+            right: 25% !important;
+            width: 50% !important;
+          }
+        }
+        
         @media (max-width: 768px) {
+          .tags-toolbar {
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            bottom: 60px !important;
+            top: auto !important;
+          }
+          
           .tag-btn {
             padding: 0.5rem 0.8rem;
             font-size: calc(0.85rem * var(--font-scale));

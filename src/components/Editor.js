@@ -174,15 +174,25 @@ class Editor extends React.Component {
 
               <fieldset className="form-group">
                 {this.state.activeTab === 'write' ? (
-                  <textarea
-                    className="form-control"
-                    rows="8"
-                    placeholder="Write your article (in markdown)"
-                    value={this.props.body}
-                    onChange={this.changeBody}>
-                  </textarea>
+                  <div>
+                    <textarea
+                      className="form-control"
+                      rows="8"
+                      placeholder="Write your article (in markdown)"
+                      value={this.props.body}
+                      onChange={this.changeBody}>
+                    </textarea>
+                    <div className="char-count">
+                      {(this.props.body || '').length} chars • {Math.ceil((this.props.body || '').split(/\s+/).filter(w => w).length)} words
+                    </div>
+                  </div>
                 ) : (
-                  <div className="markdown-preview" dangerouslySetInnerHTML={{ __html: marked(this.props.body || '') }}></div>
+                  <div>
+                    <div className="reading-time">
+                      Reading time: {Math.max(1, Math.ceil((this.props.body || '').split(/\s+/).filter(w => w).length / 200))} min
+                    </div>
+                    <div className="markdown-preview" dangerouslySetInnerHTML={{ __html: marked(this.props.body || '') }}></div>
+                  </div>
                 )}
               </fieldset>
 
@@ -241,42 +251,62 @@ class Editor extends React.Component {
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            padding: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+          }
+
+          .content-section {
+            padding: 1rem;
+            padding-top: 56px;
+            padding-bottom: 60px;
+            overflow-y: auto;
           }
 
           .editor-main {
             background: var(--bg-card);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-color);
             width: 100%;
             box-sizing: border-box;
+            max-width: 900px;
+            margin: 0 auto;
           }
 
           .editor-main .form-control {
             border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 0.75rem;
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
             font-size: 1rem;
+            color: var(--text-main);
+            background: var(--bg-body);
+            transition: all 0.2s;
+            font-family: inherit;
+          }
+
+          .editor-main .form-control::placeholder {
             color: var(--text-secondary);
-            background: var(--bg-hover);
-            transition: border-color 0.2s;
           }
 
           .editor-main .form-control:focus {
             border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+            background: var(--bg-body);
           }
 
           .editor-main .form-control-lg {
-            font-size: 1.5rem;
-            padding: 1rem;
+            font-size: 1.75rem;
+            padding: 1.25rem;
+            font-weight: 600;
           }
 
           .editor-main textarea.form-control {
             resize: vertical;
-            min-height: 200px;
+            min-height: 300px;
+            line-height: 1.6;
           }
 
           .editor-main .form-group {
@@ -316,38 +346,51 @@ class Editor extends React.Component {
           .editor-main .btn {
             min-height: 44px;
             font-size: 1rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
           }
 
           @media (max-width: 768px) {
-            .editor-page {
-              padding-top: 56px;
+            .content-section {
+              padding: 0;
+              padding-top: 0;
+              padding-bottom: 60px;
             }
 
             .editor-main {
-              margin: 0.5rem;
-              padding: 1rem;
-              border-radius: 6px;
+              margin: 0;
+              padding: 1.5rem;
+              border-radius: 0;
+              max-width: 100%;
             }
 
             .editor-main .form-control {
               font-size: 16px;
-              padding: 0.85rem;
+              padding: 0.75rem;
             }
 
             .editor-main .form-control-lg {
               font-size: 1.25rem;
-              padding: 0.85rem;
+              padding: 0.75rem;
             }
 
             .editor-main textarea.form-control {
-              min-height: 150px;
+              min-height: 200px;
             }
 
             .editor-main .btn {
               width: 100%;
               margin-top: 1rem;
+            }
+
+            .title-input-container {
+              flex-direction: column;
+            }
+
+            .btn-ai-generate {
+              width: 100%;
             }
 
             .pull-xs-right {
@@ -357,73 +400,121 @@ class Editor extends React.Component {
 
           .editor-tabs {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1rem;
+            gap: 0.25rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0;
           }
 
           .editor-tab {
             background: none;
             border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             font-size: 0.95rem;
             font-weight: 600;
             color: var(--text-secondary);
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 0;
             transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
           }
 
           .editor-tab:hover {
-            background: var(--bg-hover);
             color: var(--primary);
           }
 
           .editor-tab.active {
-            background: var(--bg-hover);
             color: var(--primary);
+            border-bottom-color: var(--primary);
           }
 
           .markdown-preview {
-            min-height: 200px;
-            padding: 1rem;
+            min-height: 300px;
+            padding: 1.5rem;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 8px;
             background: var(--bg-body);
             color: var(--text-main);
             overflow-y: auto;
-            line-height: 1.6;
+            line-height: 1.8;
+            font-size: 1rem;
           }
 
-          .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
-            margin-top: 1rem;
+          .markdown-preview h1 {
+            font-size: 2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+          }
+
+          .markdown-preview h2 {
+            font-size: 1.5rem;
+            margin-top: 1.25rem;
             margin-bottom: 0.5rem;
             font-weight: 700;
           }
 
+          .markdown-preview h3 {
+            font-size: 1.25rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+          }
+
           .markdown-preview p {
             margin-bottom: 1rem;
+            line-height: 1.8;
           }
 
           .markdown-preview ul, .markdown-preview ol {
-            padding-left: 1.5rem;
+            padding-left: 2rem;
             margin-bottom: 1rem;
+          }
+
+          .markdown-preview li {
+            margin-bottom: 0.5rem;
+          }
+
+          .markdown-preview blockquote {
+            border-left: 3px solid var(--primary);
+            padding-left: 1rem;
+            margin-left: 0;
+            color: var(--text-secondary);
+            font-style: italic;
+          }
+
+          .markdown-preview a {
+            color: var(--primary);
+            text-decoration: underline;
+          }
+
+          .markdown-preview a:hover {
+            color: var(--primary-hover);
           }
 
           .markdown-preview code {
             background: var(--bg-hover);
-            padding: 0.2rem 0.4rem;
+            padding: 0.25rem 0.5rem;
             border-radius: 4px;
             font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--primary);
           }
 
           .markdown-preview pre {
             background: var(--bg-hover);
-            padding: 1rem;
-            border-radius: 6px;
+            padding: 1.25rem;
+            border-radius: 8px;
             overflow-x: auto;
             margin-bottom: 1rem;
+            border-left: 3px solid var(--primary);
+          }
+
+          .markdown-preview pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-main);
           }
 
           .tag-help-text {
@@ -433,28 +524,48 @@ class Editor extends React.Component {
             margin-left: 0.25rem;
           }
 
+          .char-count {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            margin-left: 0.25rem;
+          }
+
+          .reading-time {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: var(--bg-hover);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+          }
+
           .title-input-container {
             display: flex;
             gap: 0.75rem;
-            align-items: center;
+            align-items: stretch;
           }
 
           .title-input-container .form-control {
             flex: 1;
+            display: flex;
+            align-items: center;
           }
 
           .btn-ai-generate {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 0.75rem 1rem;
-            border-radius: 6px;
+            padding: 0.875rem 1.25rem;
+            border-radius: 8px;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
-            min-width: 110px;
+            min-width: 120px;
+            height: 100%;
           }
 
           .btn-ai-generate:hover:not(:disabled) {

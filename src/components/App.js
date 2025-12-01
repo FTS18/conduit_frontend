@@ -142,6 +142,16 @@ class App extends React.Component {
                 <span>Profile</span>
               </Link>
             )}
+            {!this.props.currentUser && (
+              <Link to="/login" className={`nav-link ${this.isActive('/login') ? 'active' : ''}`}>
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                  <polyline points="10 17 15 12 10 7"></polyline>
+                  <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
+                <span>Login</span>
+              </Link>
+            )}
           </div>
 
           <style>{`
@@ -174,6 +184,11 @@ class App extends React.Component {
             }
 
             @media (max-width: 768px) {
+              body {
+                overflow-y: auto;
+                overflow-x: hidden;
+              }
+              
               .main-content {
                 margin-left: 0;
                 left: 0;
@@ -181,6 +196,7 @@ class App extends React.Component {
                 width: 100%;
                 max-width: 100%;
                 padding-bottom: 60px;
+                overflow-y: visible;
               }
             }
 
@@ -194,6 +210,7 @@ class App extends React.Component {
               border-top: 1px solid var(--border-color);
               display: none;
               z-index: 999;
+              box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
             }
 
             @media (max-width: 768px) {

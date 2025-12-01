@@ -209,7 +209,9 @@ const Notifications = {
   getAll: (type) =>
     requests.get(`/notifications${type ? `?type=${type}` : ''}`),
   markRead: (id) =>
-    requests.put(`/notifications/${id}/read`, {})
+    requests.put(`/notifications/${id}/read`, {}),
+  send: (userId, type, data) =>
+    requests.post('/notifications/send', { userId, type, data })
 };
 
 const Moderation = {

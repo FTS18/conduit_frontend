@@ -125,18 +125,7 @@ class Home extends React.Component {
             overflow-x: hidden;
           }
 
-          .tags-toolbar {
-            position: fixed;
-            top: 56px;
-            left: 25%;
-            right: 25%;
-            z-index: 999;
-            width: 50%;
-            background: rgba(0, 0, 0, 0.25);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          }
+
 
           .home-content {
             display: flex;
@@ -155,7 +144,7 @@ class Home extends React.Component {
             flex: 1;
             min-width: 0;
             box-sizing: border-box;
-            padding: 5rem 1rem 2rem 2rem;
+            padding: 1.5rem 1rem 50px 2rem;
             width: 100%;
             margin: 0;
             display: flex;
@@ -180,18 +169,11 @@ class Home extends React.Component {
           @media (max-width: 768px) {
             body {
               overflow-x: hidden !important;
+              overflow-y: auto !important;
             }
             .home-page {
               background: var(--bg-body);
-            }
-
-            .tags-toolbar {
-              position: fixed !important;
-              top: 56px !important;
-              left: 0 !important;
-              right: 0 !important;
-              width: 100% !important;
-              z-index: 1001 !important;
+              overflow-y: visible !important;
             }
 
             .home-content {
@@ -207,10 +189,11 @@ class Home extends React.Component {
             .feed-section {
               width: 100% !important;
               min-width: 0 !important;
-              padding: 0 !important;
+              padding: 0 0 40px 0 !important;
               margin: 0 !important;
               box-sizing: border-box !important;
               max-width: 100% !important;
+              overflow-y: visible !important;
             }
 
             .feed-toggle {
