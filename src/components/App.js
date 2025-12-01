@@ -168,7 +168,7 @@ class App extends React.Component {
               right: 25%;
               top: 56px;
               width: 50%;
-              height: 100vh;
+              height: 90vh;
               box-sizing: border-box;
               display: flex;
               flex-direction: column;
