@@ -30,7 +30,7 @@ const TagsToolbar = ({ tags, currentTag, onClickTag }) => {
         >
           All
         </button>
-        {tags.slice(0, 25).map(tag => (
+        {tags.map(tag => (
           <button
             key={tag}
             className={`tag-btn ${currentTag === tag ? 'active' : ''}`}
@@ -114,7 +114,6 @@ const TagsToolbar = ({ tags, currentTag, onClickTag }) => {
             right: 0 !important;
             width: 100% !important;
             bottom: 60px !important;
-            top: auto !important;
           }
           
           .tag-btn {

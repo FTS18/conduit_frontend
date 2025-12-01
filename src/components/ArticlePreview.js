@@ -293,19 +293,11 @@ const ArticlePreview = props => {
         }
 
         .read-more {
-          color: var(--primary);
-          font-size: calc(0.9rem * var(--font-scale));
-          font-weight: 500;
-          white-space: nowrap;
-          text-decoration: none;
+          display: none;
         }
 
         .article-tags {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          margin-top: 1rem;
-          flex-wrap: wrap;
+          display: none;
         }
 
         .tags-label {
@@ -383,9 +375,9 @@ const ArticlePreview = props => {
 
         @media (max-width: 480px) {
           .article-preview {
-            padding: 1rem !important;
-            margin: 0.5rem 0 !important;
-            border-radius: 16px !important;
+            padding: 0.75rem !important;
+            margin: 0.25rem 0 !important;
+            border-radius: 12px !important;
             background: var(--bg-card) !important;
             border: 1px solid var(--border-color) !important;
             width: 100% !important;
@@ -412,9 +404,9 @@ const ArticlePreview = props => {
           }
 
           .article-title {
-            font-size: calc(1.2rem * var(--font-scale));
-            margin-bottom: 0;
-            line-height: 1.3;
+            font-size: calc(1.1rem * var(--font-scale));
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
             font-weight: 700;
           }
 
@@ -427,10 +419,10 @@ const ArticlePreview = props => {
           }
 
           .article-description {
-            font-size: calc(0.9rem * var(--font-scale));
-            margin-bottom: 1rem;
-            line-height: 1.5;
-            -webkit-line-clamp: 3;
+            font-size: calc(0.85rem * var(--font-scale));
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            -webkit-line-clamp: 2;
             color: var(--text-secondary);
           }
 
@@ -462,7 +454,7 @@ const ArticlePreview = props => {
           .article-bottom-section {
             flex-direction: column;
             align-items: flex-start;
-            gap: 1rem;
+            gap: 0.5rem;
           }
 
           .article-actions-bottom {
