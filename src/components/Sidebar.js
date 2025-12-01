@@ -65,7 +65,7 @@ const Sidebar = ({ currentUser, location, onLogout }) => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .sidebar-nav {
           position: fixed;
           left: 0;

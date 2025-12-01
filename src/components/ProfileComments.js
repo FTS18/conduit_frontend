@@ -26,7 +26,7 @@ const mapDispatchToProps = dispatch => ({
 });
 
 class ProfileComments extends React.Component {
-  componentWillMount() {
+  componentDidMount() {
     this.props.onLoad(this.props.match.params.username);
   }
 

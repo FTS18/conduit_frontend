@@ -4,9 +4,11 @@ import React from 'react';
 import agent from '../agent';
 import { supabase } from '../supabaseClient';
 import { connect } from 'react-redux';
-import { validateEmail, validatePassword, validateUsername, checkEmailFormat } from '../utils/authValidation';
+import { validateEmail, validatePassword, validateUsername, checkEmailFormat, sanitizeInput } from '../utils/authValidation';
 import { checkPasswordBreach, getDeviceFingerprint } from '../utils/authSecurity';
+import { handleGoogleOAuthLogin } from '../utils/oauthHelper';
 import { handleAccountLinking } from '../utils/accountLinking';
+import { emailService } from '../utils/emailService';
 import AccountLinkingModal from './AccountLinkingModal';
 import {
   UPDATE_FIELD_AUTH,
@@ -159,11 +161,15 @@ class Register extends React.Component {
         if (error) throw error;
         
         if (data.user && !data.user.email_confirmed_at) {
+          // Send welcome email
+          await emailService.sendWelcomeEmail(data.user.email, username);
           this.setState({ emailVerificationSent: true, isValidating: false });
           return null;
         }
         
         if (data.user) {
+          // Send welcome email after successful registration
+          await emailService.sendWelcomeEmail(data.user.email, username);
           return agent.Auth.supabaseLogin({
             email: data.user.email,
             username: username,
@@ -181,33 +187,27 @@ class Register extends React.Component {
     };
 
     this.handleGoogleLogin = async () => {
+      this.setState({ isValidating: true });
+      
       try {
-        // First check if account linking is needed
-        if (this.props.email) {
-          const linkingCheck = await handleAccountLinking(this.props.email, 'google');
-          
-          if (linkingCheck.action === 'link_required') {
-            this.setState({
-              showAccountLinking: true,
-              linkingData: { ...linkingCheck, newAuthMethod: 'google' }
-            });
-            return;
-          }
+        const result = await handleGoogleOAuthLogin(true);
+        
+        if (!result.success) {
+          this.setState({ 
+            passwordError: result.error,
+            isValidating: false 
+          });
+          return;
         }
         
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: window.location.origin,
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-            }
-          }
-        });
-        if (error) throw error;
+        // OAuth redirect will handle the flow
+        // User will be redirected to Google, then back to /auth/callback
       } catch (error) {
-        console.error('Google login error:', error);
+        console.error('[REGISTER] Google signup error:', error);
+        this.setState({ 
+          passwordError: error.message || 'Google signup failed. Please try again.',
+          isValidating: false 
+        });
       }
     };
     

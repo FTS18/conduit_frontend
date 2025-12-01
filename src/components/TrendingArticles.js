@@ -12,7 +12,7 @@ class TrendingArticles extends React.Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.loadTrending();
   }
 

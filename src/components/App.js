@@ -4,27 +4,38 @@ import MinimalHeader from './MinimalHeader';
 import Sidebar from './Sidebar';
 import GlobalSidebar from './GlobalSidebar';
 import Notifications from './Notifications';
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { connect } from 'react-redux';
 import { APP_LOAD, REDIRECT } from '../constants/actionTypes';
 import { Route, Switch, Link, withRouter } from 'react-router-dom';
-import Article from '../components/Article';
-import Editor from '../components/Editor';
 import Home from '../components/Home';
-import Login from '../components/Login';
-import Profile from '../components/Profile';
-import ReadingList from '../components/ReadingList';
-import Register from '../components/Register';
-import Settings from '../components/Settings';
-import AuthCallback from '../components/AuthCallback';
-import TermsOfService from '../components/TermsOfService';
-import PrivacyPolicy from '../components/PrivacyPolicy';
-import ForgotPassword from '../components/ForgotPassword';
 import A2HSPrompt from '../components/A2HSPrompt';
 import { ToastProvider } from '../components/ToastContext';
 import { KeyboardShortcutsProvider } from '../components/KeyboardShortcuts';
 import { store } from '../store';
 import { push } from 'react-router-redux';
+import Settings from '../components/Settings';
+
+// Lazy load components - reduces initial bundle by ~40KB
+const Article = lazy(() => import('../components/Article'));
+const Editor = lazy(() => import('../components/Editor'));
+const Login = lazy(() => import('../components/Login'));
+const Profile = lazy(() => import('../components/Profile'));
+const ReadingList = lazy(() => import('../components/ReadingList'));
+const Register = lazy(() => import('../components/Register'));
+const AuthCallback = lazy(() => import('../components/AuthCallback'));
+const ResetPassword = lazy(() => import('../components/ResetPassword'));
+const TermsOfService = lazy(() => import('../components/TermsOfService'));
+const PrivacyPolicy = lazy(() => import('../components/PrivacyPolicy'));
+const ForgotPassword = lazy(() => import('../components/ForgotPassword'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="page-loading">
+    <div className="spinner"></div>
+    <p>Loading...</p>
+  </div>
+);
 
 const mapStateToProps = state => {
   return {
@@ -43,20 +54,20 @@ const mapDispatchToProps = dispatch => ({
 });
 
 class App extends React.Component {
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.redirectTo) {
-      store.dispatch(push(nextProps.redirectTo));
-      this.props.onRedirect();
-    }
-  }
-
-  componentWillMount() {
+  componentDidMount() {
     const token = window.localStorage.getItem('jwt');
     if (token) {
       agent.setToken(token);
     }
 
     this.props.onLoad(token ? agent.Auth.current() : null, token);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.redirectTo && this.props.redirectTo !== prevProps.redirectTo) {
+      store.dispatch(push(this.props.redirectTo));
+      this.props.onRedirect();
+    }
   }
 
   isActive = (path) => {
@@ -68,7 +79,11 @@ class App extends React.Component {
   render() {
     // Handle Supabase OAuth redirect which might look like /access_token=...
     if (window.location.hash && window.location.hash.includes('access_token')) {
-      return <AuthCallback history={this.props.history} />;
+      return (
+        <Suspense fallback={<LoadingFallback />}>
+          <AuthCallback history={this.props.history} />
+        </Suspense>
+      );
     }
 
     if (this.props.appLoaded) {
@@ -80,24 +95,27 @@ class App extends React.Component {
           <Sidebar />
           <GlobalSidebar currentUser={this.props.currentUser} />
           <div className="main-content">
-            <Switch>
-              <Route exact path="/" component={Home} />
-              <Route path="/login" component={Login} />
-              <Route path="/register" component={Register} />
-              <Route path="/forgot-password" component={ForgotPassword} />
-              <Route path="/terms" component={TermsOfService} />
-              <Route path="/privacy" component={PrivacyPolicy} />
-              <Route path="/auth/callback" component={AuthCallback} />
-              <Route path="/access_token" component={AuthCallback} />
-              <Route path="/editor/:slug" component={Editor} />
-              <Route path="/editor" component={Editor} />
-              <Route path="/article/:id" component={Article} />
-              <Route path="/reading-list" component={ReadingList} />
-              <Route path="/settings" component={Settings} />
-              <Route path="/@:username/:tab" component={Profile} />
-              <Route path="/@:username" component={Profile} />
-              <Route path="/notifications" component={Notifications} />
-            </Switch>
+            <Suspense fallback={<LoadingFallback />}>
+              <Switch>
+                <Route exact path="/" component={Home} />
+                <Route path="/login" component={Login} />
+                <Route path="/register" component={Register} />
+                <Route path="/forgot-password" component={ForgotPassword} />
+                <Route path="/reset-password" component={ResetPassword} />
+                <Route path="/terms" component={TermsOfService} />
+                <Route path="/privacy" component={PrivacyPolicy} />
+                <Route path="/auth/callback" component={AuthCallback} />
+                <Route path="/access_token" component={AuthCallback} />
+                <Route path="/editor/:slug" component={Editor} />
+                <Route path="/editor" component={Editor} />
+                <Route path="/article/:id" component={Article} />
+                <Route path="/reading-list" component={ReadingList} />
+                <Route path="/settings" component={Settings} />
+                <Route path="/@:username/:tab" component={Profile} />
+                <Route path="/@:username" component={Profile} />
+                <Route path="/notifications" component={Notifications} />
+              </Switch>
+            </Suspense>
           </div>
 
           <A2HSPrompt />

@@ -76,20 +76,16 @@ class Profile extends React.Component {
     };
   }
 
-  componentWillMount() {
-    this.loadProfile();
-  }
-
   componentDidMount() {
     this.loadProfile();
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.match.params.username !== nextProps.match.params.username) {
+  componentDidUpdate(prevProps) {
+    if (this.props.match.params.username !== prevProps.match.params.username) {
       this.props.onUnload();
-      this.loadProfile(nextProps);
-    } else if (this.props.match.params.tab !== nextProps.match.params.tab) {
-      this.loadTabData(nextProps);
+      this.loadProfile();
+    } else if (this.props.match.params.tab !== prevProps.match.params.tab) {
+      this.loadTabData(this.props);
     }
   }
 

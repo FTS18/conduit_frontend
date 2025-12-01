@@ -54,7 +54,7 @@ class SettingsForm extends React.Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     if (this.props.currentUser) {
       this.setState({
         image: this.props.currentUser.image || '',
@@ -67,21 +67,21 @@ class SettingsForm extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.currentUser && nextProps.currentUser !== this.props.currentUser) {
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentUser !== this.props.currentUser && this.props.currentUser) {
       this.setState({
-        image: nextProps.currentUser.image || '',
-        username: nextProps.currentUser.username || '',
-        bio: nextProps.currentUser.bio || '',
-        email: nextProps.currentUser.email || '',
-        location: nextProps.currentUser.location || '',
-        website: nextProps.currentUser.website || '',
+        image: this.props.currentUser.image || '',
+        username: this.props.currentUser.username || '',
+        bio: this.props.currentUser.bio || '',
+        email: this.props.currentUser.email || '',
+        location: this.props.currentUser.location || '',
+        website: this.props.currentUser.website || '',
         password: '',
         inProgress: false
       });
     }
     
-    if (nextProps.errors !== this.props.errors) {
+    if (prevProps.errors !== this.props.errors) {
       this.setState({ inProgress: false });
     }
   }

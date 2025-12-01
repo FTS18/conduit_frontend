@@ -95,23 +95,7 @@ const ArticlePreview = props => {
         {article.description && (
           <p className="article-description">{article.description}</p>
         )}
-        <div className="article-footer">
-          <span className="read-more">Read more...</span>
-        </div>
       </Link>
-
-      {article.tagList && article.tagList.length > 0 && (
-        <div className="article-tags">
-          <span className="tags-label">Tags:</span>
-          <ul className="tag-list">
-            {article.tagList.map(tag => (
-              <li className="tag-hash" key={tag}>
-                <button className="tag-link" onClick={(ev) => handleTagClick(ev, tag)}>{tag}</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       <div className="article-bottom-section">
         <div className="article-author-section">

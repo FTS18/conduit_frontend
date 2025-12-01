@@ -4,10 +4,13 @@ import React from 'react';
 import agent from '../agent';
 import { supabase } from '../supabaseClient';
 import { connect } from 'react-redux';
-import { validateEmail } from '../utils/authValidation';
-import { checkRateLimit, recordFailedAttempt, clearFailedAttempts, getDeviceFingerprint } from '../utils/authSecurity';
+import { validateEmail, validatePassword, sanitizeInput } from '../utils/authValidation';
+import { checkRateLimit, recordFailedAttempt, clearFailedAttempts, getDeviceFingerprint, getCSRFToken, generateCSRFToken, setTokenWithExpiry, checkPasswordBreach } from '../utils/authSecurity';
+import { parseAuthError, getRecoverySuggestion, logAuthError } from '../utils/robustAuthErrors';
 import { handleAccountLinking } from '../utils/accountLinking';
 import { checkForDuplicateAccounts, autoMergeOnLogin } from '../utils/accountMerging';
+import { handleGoogleOAuthLogin } from '../utils/oauthHelper';
+import robustAuthManager from '../utils/robustAuthManager';
 import TwoFactorAuth from './TwoFactorAuth';
 import AccountLinkingModal from './AccountLinkingModal';
 import AccountMergeModal from './AccountMergeModal';
@@ -36,6 +39,8 @@ class Login extends React.Component {
     this.state = {
       showPassword: false,
       emailError: '',
+      passwordError: '',
+      passwordStrength: 0,
       isValidating: false,
       rememberMe: false,
       showTwoFactor: false,
@@ -44,22 +49,56 @@ class Login extends React.Component {
       showAccountLinking: false,
       linkingData: null,
       showAccountMerge: false,
-      mergeData: null
+      mergeData: null,
+      loginAttempts: 0,
+      lastLoginAttempt: null,
+      isSessionLoading: true,
+      passwordStrengthText: '',
+      securityWarnings: []
     };
     
+    // Initialize CSRF token
+    generateCSRFToken();
+    
     this.changeEmail = ev => {
-      const email = ev.target.value;
+      const email = sanitizeInput(ev.target.value);
       this.props.onChangeEmail(email);
       
       if (email) {
         const validation = validateEmail(email);
         this.setState({ emailError: validation.isValid ? '' : validation.message });
+        localStorage.setItem('user_email', email);
       } else {
         this.setState({ emailError: '' });
       }
     };
     
-    this.changePassword = ev => this.props.onChangePassword(ev.target.value);
+    this.changePassword = ev => {
+      const password = ev.target.value;
+      this.props.onChangePassword(password);
+      
+      if (password) {
+        const validation = validatePassword(password);
+        const strengthMap = { 0: 'Very Weak', 1: 'Weak', 2: 'Fair', 3: 'Good', 4: 'Strong' };
+        
+        this.setState({ 
+          passwordError: validation.isValid ? '' : validation.message,
+          passwordStrength: validation.strength,
+          passwordStrengthText: strengthMap[validation.strength] || 'Very Weak'
+        });
+        
+        // Check for common password breach patterns
+        const breachCheck = checkPasswordBreach(password);
+        if (breachCheck.isBreach) {
+          this.setState({ 
+            passwordError: breachCheck.reason,
+            securityWarnings: [...this.state.securityWarnings, breachCheck.reason]
+          });
+        }
+      } else {
+        this.setState({ passwordError: '', passwordStrength: 0, passwordStrengthText: '' });
+      }
+    };
     
     this.togglePasswordVisibility = () => {
       this.setState(prev => ({ showPassword: !prev.showPassword }));
@@ -68,25 +107,40 @@ class Login extends React.Component {
     this.submitForm = (email, password) => ev => {
       ev.preventDefault();
       
+      // Additional validation
       const emailValidation = validateEmail(email);
       if (!emailValidation.isValid) {
         this.setState({ emailError: emailValidation.message });
         return;
       }
       
-      // Check rate limiting
-      const rateCheck = checkRateLimit(email);
-      if (!rateCheck.allowed) {
-        this.setState({ 
-          rateLimitError: `Too many failed attempts. Try again in ${rateCheck.remainingMinutes} minutes.` 
-        });
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        this.setState({ passwordError: passwordValidation.message });
         return;
       }
       
-      this.setState({ isValidating: true, rateLimitError: '' });
+      // Check rate limiting
+      const rateCheck = checkRateLimit(email);
+      if (!rateCheck.allowed) {
+        const msg = rateCheck.remainingSeconds > 60 
+          ? `Too many failed attempts. Try again in ${rateCheck.remainingMinutes} minutes.`
+          : `Too many failed attempts. Try again in ${rateCheck.remainingSeconds} seconds.`;
+        this.setState({ rateLimitError: msg });
+        logAuthError(parseAuthError({ status: 429 }), { email, action: 'login_attempt' });
+        return;
+      }
+      
+      this.setState({ isValidating: true, rateLimitError: '', securityWarnings: [] });
       
       const promise = (async () => {
         try {
+          // Verify CSRF token
+          const csrfToken = getCSRFToken();
+          if (!csrfToken) {
+            throw parseAuthError({ status: 400, message: 'CSRF token validation failed' });
+          }
+          
           // Check for duplicate accounts first
           const duplicateCheck = await checkForDuplicateAccounts(email, 'email');
           
@@ -112,12 +166,28 @@ class Login extends React.Component {
           }
           
           const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          
           if (error) {
             recordFailedAttempt(email);
-            throw error;
+            const parsedError = parseAuthError(error);
+            logAuthError(parsedError, { email, action: 'supabase_signin' });
+            
+            const recovery = getRecoverySuggestion(parsedError.code);
+            this.setState({ 
+              rateLimitError: parsedError.message,
+              recoveryAction: recovery.action,
+              recoveryMessage: recovery.message
+            });
+            throw parsedError;
           }
           
           clearFailedAttempts(email);
+          
+          // Store token with expiry
+          if (data.session?.access_token) {
+            setTokenWithExpiry(data.session.access_token, data.session.expires_in * 1000);
+            robustAuthManager.handleLoginSuccess(data.session.access_token, data.session.expires_in);
+          }
           
           // Check if 2FA is needed (simulate based on device trust)
           if (!this.state.deviceTrust && Math.random() > 0.7) {
@@ -138,6 +208,12 @@ class Login extends React.Component {
           });
         } catch (error) {
           this.setState({ isValidating: false });
+          console.error('[AUTH] Login error:', error);
+          
+          if (error.code) {
+            logAuthError(error, { email, action: 'login_process' });
+          }
+          
           throw error;
         }
       })();
@@ -204,20 +280,35 @@ class Login extends React.Component {
     };
 
     this.handleGoogleLogin = async () => {
+      this.setState({ isValidating: true });
+      
       try {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: window.location.origin,
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-            }
-          }
-        });
-        if (error) throw error;
+        const result = await handleGoogleOAuthLogin(false);
+        
+        if (!result.success) {
+          this.setState({ 
+            rateLimitError: result.error,
+            isValidating: false 
+          });
+          logAuthError(
+            parseAuthError({ status: 400, message: result.error }),
+            { action: 'google_oauth_login', code: result.code }
+          );
+          return;
+        }
+        
+        // OAuth redirect will handle the flow
+        // User will be redirected to Google, then back to /auth/callback
       } catch (error) {
-        console.error('Google login error:', error);
+        console.error('[LOGIN] Google login error:', error);
+        this.setState({ 
+          rateLimitError: error.message || 'Google login failed. Please try again.',
+          isValidating: false 
+        });
+        logAuthError(
+          parseAuthError(error),
+          { action: 'google_oauth_login_exception' }
+        );
       }
     };
   }
@@ -291,6 +382,20 @@ class Login extends React.Component {
                         )}
                       </button>
                     </div>
+                    {this.state.passwordError && (
+                      <div className="invalid-feedback">{this.state.passwordError}</div>
+                    )}
+                    {password && !this.state.passwordError && (
+                      <div className="password-strength-info">
+                        <div className="strength-meter">
+                          <div className="strength-bar" style={{ 
+                            width: `${(this.state.passwordStrength / 4) * 100}%`,
+                            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#28a745'][this.state.passwordStrength]
+                          }}></div>
+                        </div>
+                        <small className="strength-text">Strength: {this.state.passwordStrengthText}</small>
+                      </div>
+                    )}
                   </fieldset>
 
                   <fieldset className="form-group remember-me">

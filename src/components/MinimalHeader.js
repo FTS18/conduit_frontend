@@ -100,7 +100,7 @@ const MinimalHeader = ({ appName, currentUser }) => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .minimal-navbar {
           position: fixed;
           top: 0;

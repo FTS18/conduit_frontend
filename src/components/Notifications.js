@@ -22,7 +22,7 @@ const mapDispatchToProps = dispatch => ({
 });
 
 class Notifications extends React.Component {
-  componentWillMount() {
+  componentDidMount() {
     this.props.onLoad();
   }
 

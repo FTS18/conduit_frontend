@@ -28,6 +28,9 @@ ReactDOM.render((
 
 ), document.getElementById('root'));
 
-// Service worker disabled to prevent auto-refresh during development
-// import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-// serviceWorkerRegistration.register();
+// Unregister any existing service workers
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => registration.unregister());
+  });
+}

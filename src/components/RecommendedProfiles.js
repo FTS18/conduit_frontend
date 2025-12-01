@@ -38,13 +38,13 @@ const RecommendedProfiles = (props) => {
     const fetchProfiles = async () => {
       try {
         const result = await agent.Profile.getAllUsers();
-        let profiles = result.users || [];
+        let profiles = (result && result.users) || [];
 
         profiles = profiles.filter(p => !currentUser || p.username !== currentUser.username);
 
         if (currentUser) {
           const followingRes = await agent.Profile.getFollowing(currentUser.username);
-          const followingUsernames = new Set((followingRes.following || []).map(u => u.username));
+          const followingUsernames = new Set((followingRes && followingRes.following || []).map(u => u.username));
           profiles = profiles.map(p => ({
             ...p,
             following: followingUsernames.has(p.username)

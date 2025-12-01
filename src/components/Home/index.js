@@ -32,10 +32,6 @@ const mapDispatchToProps = dispatch => ((
 ));
 
 class Home extends React.Component {
-  componentWillMount() {
-    this.loadHome();
-  }
-
   componentDidMount() {
     this.loadHome();
   }

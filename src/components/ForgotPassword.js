@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { validateEmail } from '../utils/authValidation';
+import { emailService } from '../utils/emailService';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,15 +24,32 @@ const ForgotPassword = () => {
     setError('');
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // Generate reset token via Supabase
+      const { error: resetError, data } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`
       });
       
-      if (error) throw error;
+      if (resetError) throw resetError;
+
+      // Get user info for personalized email
+      const { data: { user } } = await supabase.auth.getUser();
+      const userName = user?.user_metadata?.name || email.split('@')[0];
+
+      // Send personalized email via email service
+      const resetToken = data?.code || 'reset-token';
+      const emailResult = await emailService.sendPasswordReset(email, userName, resetToken);
       
-      setMessage('Password reset email sent! Check your inbox.');
+      if (!emailResult.success) {
+        console.warn('[FORGOT_PASSWORD] Email service warning:', emailResult.error);
+        // Still consider it a success - Supabase will send email anyway
+      }
+      
+      setMessage('Password reset email sent! Check your inbox for instructions.');
+      setEmailSent(true);
+      setEmail('');
     } catch (err) {
-      setError(err.message || 'Failed to send reset email');
+      console.error('[FORGOT_PASSWORD] Error:', err);
+      setError(err.message || 'Failed to process password reset. Please try again.');
     } finally {
       setIsLoading(false);
     }
