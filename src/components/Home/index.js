@@ -41,11 +41,9 @@ class Home extends React.Component {
   }
 
   loadHome = () => {
-    const tab = this.props.token ? 'feed' : 'all';
+    const tab = 'all';
 
-    const articlesPromise = this.props.token ?
-      agent.Articles.combinedFeed() :
-      this.fetchAllAuthorsArticles();
+    const articlesPromise = agent.Articles.all();
 
     this.props.onLoad(tab, null, Promise.all([agent.Tags.getAll(), articlesPromise]));
   }
