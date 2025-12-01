@@ -192,7 +192,6 @@ class App extends React.Component {
               .main-content {
                 margin-left: 0;
                 left: 0;
-                margin-top: 56px;
                 width: 100%;
                 max-width: 100%;
                 padding-bottom: 60px;

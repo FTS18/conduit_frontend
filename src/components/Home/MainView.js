@@ -143,7 +143,7 @@ class MainView extends React.Component {
 
         <style>{`
           .whats-happening-box {
-            background: var(--bg-card);
+            background: var(--bg-hover);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 1.5rem;
