@@ -18,21 +18,23 @@ export default (state = {}, action) => {
   switch (action.type) {
     case ARTICLE_FAVORITED:
     case ARTICLE_UNFAVORITED:
-      if (!state.articles) {
+      if (!state.articles || !Array.isArray(state.articles)) {
         return state;
       }
       return {
         ...state,
-        articles: state.articles.map(article => {
-          if (article.slug === action.payload.article.slug) {
-            return {
-              ...article,
-              favorited: action.payload.article.favorited,
-              favoritesCount: action.payload.article.favoritesCount
-            };
-          }
-          return article;
-        })
+        articles: state.articles
+          .filter(article => article && article.slug) // Filter out undefined/null articles
+          .map(article => {
+            if (article.slug === action.payload?.article?.slug) {
+              return {
+                ...article,
+                favorited: action.payload.article.favorited,
+                favoritesCount: action.payload.article.favoritesCount
+              };
+            }
+            return article;
+          })
       };
     case ARTICLE_BOOKMARKED:
     case ARTICLE_UNBOOKMARKED:
@@ -54,16 +56,16 @@ export default (state = {}, action) => {
     case SET_PAGE:
       return {
         ...state,
-        articles: action.payload.articles,
-        articlesCount: action.payload.articlesCount,
+        articles: (action.payload?.articles || []).filter(a => a && a.slug),
+        articlesCount: action.payload?.articlesCount || 0,
         currentPage: action.page
       };
     case APPLY_TAG_FILTER:
       return {
         ...state,
         pager: action.pager,
-        articles: action.payload.articles,
-        articlesCount: action.payload.articlesCount,
+        articles: (action.payload?.articles || []).filter(a => a && a.slug),
+        articlesCount: action.payload?.articlesCount || 0,
         tab: null,
         tag: action.tag,
         currentPage: 0
@@ -73,7 +75,7 @@ export default (state = {}, action) => {
         ...state,
         pager: action.pager,
         tags: action.payload && action.payload[0] ? action.payload[0].tags : [],
-        articles: action.payload && action.payload[1] ? action.payload[1].articles : [],
+        articles: (action.payload && action.payload[1] ? action.payload[1].articles : []).filter(a => a && a.slug),
         articlesCount: action.payload && action.payload[1] ? action.payload[1].articlesCount : 0,
         currentPage: 0,
         tab: action.tab
@@ -84,8 +86,8 @@ export default (state = {}, action) => {
       return {
         ...state,
         pager: action.pager,
-        articles: action.payload.articles,
-        articlesCount: action.payload.articlesCount,
+        articles: (action.payload?.articles || []).filter(a => a && a.slug),
+        articlesCount: action.payload?.articlesCount || 0,
         tab: action.tab,
         currentPage: 0,
         tag: null
@@ -95,7 +97,7 @@ export default (state = {}, action) => {
       return {
         ...state,
         pager: action.pager,
-        articles: (action.payload[1] && action.payload[1].articles) || [],
+        articles: ((action.payload[1] && action.payload[1].articles) || []).filter(a => a && a.slug),
         articlesCount: (action.payload[1] && action.payload[1].articlesCount) || 0,
         currentPage: 0
       };

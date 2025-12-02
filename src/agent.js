@@ -11,9 +11,10 @@ const responseBody = res => res.body;
 
 let token = null;
 const tokenPlugin = req => {
+  // Always check localStorage first to survive page reloads
   const storedToken = window.localStorage.getItem('jwt');
-  const actualToken = token || storedToken;
-  if (actualToken) {
+  const actualToken = storedToken || token;
+  if (actualToken && actualToken.length > 0) {
     req.set('authorization', `Token ${actualToken}`);
   }
 }
@@ -123,10 +124,20 @@ const Articles = {
     requests.put(`/articles/${article.slug}`, { article: omitSlug(article) }),
   create: article =>
     requests.post('/articles', { article }),
-  bookmark: slug =>
-    requests.post(`/articles/${slug}/bookmark`),
-  unbookmark: slug =>
-    requests.del(`/articles/${slug}/bookmark`),
+  bookmark: slug => {
+    return requests.post(`/articles/${slug}/bookmark`)
+      .catch(error => {
+        console.error('[BOOKMARK] Error bookmarking article:', error);
+        throw error;
+      });
+  },
+  unbookmark: slug => {
+    return requests.del(`/articles/${slug}/bookmark`)
+      .catch(error => {
+        console.error('[BOOKMARK] Error unbookmarking article:', error);
+        throw error;
+      });
+  },
   generateContent: title =>
     requests.post('/articles/generate', { title })
 };
@@ -228,5 +239,11 @@ export default {
   Tags,
   Notifications,
   Moderation,
-  setToken: _token => { token = _token; }
+  setToken: _token => { 
+    token = _token;
+    // Also ensure it's in localStorage for persistence across page reloads
+    if (_token) {
+      window.localStorage.setItem('jwt', _token);
+    }
+  }
 };

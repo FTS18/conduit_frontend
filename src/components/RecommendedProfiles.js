@@ -27,6 +27,7 @@ const RecommendedProfiles = (props) => {
   const [allProfiles, setAllProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [displayCount, setDisplayCount] = useState(4);
+  const [followingSet, setFollowingSet] = useState(new Set());
 
   useEffect(() => {
     if (showOnlyOnHome && window.location.pathname.includes('/article/')) {
@@ -45,6 +46,7 @@ const RecommendedProfiles = (props) => {
         if (currentUser) {
           const followingRes = await agent.Profile.getFollowing(currentUser.username);
           const followingUsernames = new Set((followingRes && followingRes.following || []).map(u => u.username));
+          setFollowingSet(followingUsernames);
           profiles = profiles.map(p => ({
             ...p,
             following: followingUsernames.has(p.username)
@@ -66,6 +68,35 @@ const RecommendedProfiles = (props) => {
 
     fetchProfiles();
   }, [currentUser, showOnlyOnHome]);
+
+  // Update profiles when currentUser's following count changes (indicates follow/unfollow happened)
+  useEffect(() => {
+    if (!currentUser || allProfiles.length === 0) return;
+
+    const updateProfilesFromCurrentUser = async () => {
+      try {
+        const followingRes = await agent.Profile.getFollowing(currentUser.username);
+        const followingUsernames = new Set((followingRes && followingRes.following || []).map(u => u.username));
+        
+        // Only update if following set changed
+        if (JSON.stringify([...followingSet].sort()) !== JSON.stringify([...followingUsernames].sort())) {
+          setFollowingSet(followingUsernames);
+          
+          const updatedProfiles = allProfiles.map(p => ({
+            ...p,
+            following: followingUsernames.has(p.username)
+          }));
+          updatedProfiles.sort((a, b) => (a.following ? 1 : 0) - (b.following ? 1 : 0));
+          setAllProfiles(updatedProfiles);
+          setDisplayedProfiles(updatedProfiles.slice(0, displayCount));
+        }
+      } catch (err) {
+        console.error('Error updating profiles:', err);
+      }
+    };
+
+    updateProfilesFromCurrentUser();
+  }, [currentUser?.followingCount]);
 
   const handleFollowClick = (e, profile) => {
     e.preventDefault();

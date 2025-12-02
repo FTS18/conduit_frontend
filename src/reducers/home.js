@@ -18,38 +18,42 @@ export default (state = {}, action) => {
       return {};
     case ARTICLE_FAVORITED:
     case ARTICLE_UNFAVORITED:
-      if (!state.articles) {
+      if (!state.articles || !Array.isArray(state.articles)) {
         return state;
       }
       return {
         ...state,
-        articles: state.articles.map(article => {
-          if (article.slug === action.payload.article.slug) {
-            return {
-              ...article,
-              favorited: action.payload.article.favorited,
-              favoritesCount: action.payload.article.favoritesCount
-            };
-          }
-          return article;
-        })
+        articles: state.articles
+          .filter(article => article && article.slug)
+          .map(article => {
+            if (article.slug === action.payload?.article?.slug) {
+              return {
+                ...article,
+                favorited: action.payload.article.favorited,
+                favoritesCount: action.payload.article.favoritesCount
+              };
+            }
+            return article;
+          })
       };
     case ARTICLE_BOOKMARKED:
     case ARTICLE_UNBOOKMARKED:
-      if (!state.articles) {
+      if (!state.articles || !Array.isArray(state.articles)) {
         return state;
       }
       return {
         ...state,
-        articles: state.articles.map(article => {
-          if (article.slug === action.payload.article.slug) {
-            return {
-              ...article,
-              bookmarked: action.payload.article.bookmarked
-            };
-          }
-          return article;
-        })
+        articles: state.articles
+          .filter(article => article && article.slug)
+          .map(article => {
+            if (article.slug === action.payload?.article?.slug) {
+              return {
+                ...article,
+                bookmarked: action.payload.article.bookmarked
+              };
+            }
+            return article;
+          })
       };
     default:
       return state;

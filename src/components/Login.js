@@ -81,20 +81,12 @@ class Login extends React.Component {
         const validation = validatePassword(password);
         const strengthMap = { 0: 'Very Weak', 1: 'Weak', 2: 'Fair', 3: 'Good', 4: 'Strong' };
         
+        // Don't show password errors - just strength indicator
         this.setState({ 
-          passwordError: validation.isValid ? '' : validation.message,
+          passwordError: '',
           passwordStrength: validation.strength,
           passwordStrengthText: strengthMap[validation.strength] || 'Very Weak'
         });
-        
-        // Check for common password breach patterns
-        const breachCheck = checkPasswordBreach(password);
-        if (breachCheck.isBreach) {
-          this.setState({ 
-            passwordError: breachCheck.reason,
-            securityWarnings: [...this.state.securityWarnings, breachCheck.reason]
-          });
-        }
       } else {
         this.setState({ passwordError: '', passwordStrength: 0, passwordStrengthText: '' });
       }

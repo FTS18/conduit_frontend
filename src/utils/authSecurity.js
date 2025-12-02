@@ -137,27 +137,10 @@ export const verifyDeviceFingerprint = (storedFingerprint) => {
   }
 };
 
-// Password breach check (enhanced)
-const commonPasswords = [
-  '123456', 'password', '123456789', 'qwerty', 'abc123', 
-  '12345678', 'qwerty123', 'monkey', 'letmein', '1234567',
-  'trustno1', 'dragon', 'baseball', 'iloveyou', 'master'
-];
-
+// Password breach check - DISABLED
+// Let users choose any password they want
 export const checkPasswordBreach = (password) => {
-  const lower = password.toLowerCase();
-  
-  // Check common passwords
-  if (commonPasswords.includes(lower)) {
-    return { isBreach: true, reason: 'Password is too common' };
-  }
-  
-  // Check if password contains email (common mistake)
-  const userEmail = localStorage.getItem('user_email');
-  if (userEmail && lower.includes(userEmail.split('@')[0].toLowerCase())) {
-    return { isBreach: true, reason: 'Password should not contain your email' };
-  }
-  
+  // No validation - user can store any password they like
   return { isBreach: false, reason: '' };
 };
 

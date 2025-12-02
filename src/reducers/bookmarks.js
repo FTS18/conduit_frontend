@@ -10,8 +10,8 @@ export default (state = {}, action) => {
     case BOOKMARKS_PAGE_LOADED:
       return {
         ...state,
-        articles: action.payload.articles,
-        articlesCount: action.payload.articlesCount
+        articles: (action.payload?.articles || []).filter(a => a && a.slug),
+        articlesCount: action.payload?.articlesCount || 0
       };
     case BOOKMARKS_PAGE_UNLOADED:
       return {};
@@ -23,9 +23,9 @@ export default (state = {}, action) => {
         return state;
       }
       // Remove unbookmarked article from reading list immediately
-      const filteredArticles = state.articles.filter(article => 
-        article.slug !== action.payload.article.slug
-      );
+      const filteredArticles = (state.articles || [])
+        .filter(article => article && article.slug)
+        .filter(article => article.slug !== action.payload?.article?.slug);
       return {
         ...state,
         articles: filteredArticles,

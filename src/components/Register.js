@@ -73,17 +73,11 @@ class Register extends React.Component {
       
       if (password) {
         const validation = validatePassword(password);
-        const isBreach = checkPasswordBreach(password);
-        
-        let errorMessage = validation.message;
-        if (isBreach) {
-          errorMessage = 'This password has been found in data breaches. Please choose a different one.';
-        }
-        
+        // Don't show any error for passwords - just update strength indicator
         this.setState({ 
-          passwordError: validation.isValid && !isBreach ? '' : errorMessage,
-          passwordStrength: isBreach ? 0 : validation.strength,
-          passwordBreach: isBreach
+          passwordError: '', // Always clear error
+          passwordStrength: validation.strength,
+          passwordBreach: false
         });
       } else {
         this.setState({ passwordError: '', passwordStrength: 0, passwordBreach: false });
@@ -112,17 +106,16 @@ class Register extends React.Component {
       const emailValidation = validateEmail(email);
       const passwordValidation = validatePassword(password);
       const usernameValidation = validateUsername(username);
-      const isBreach = checkPasswordBreach(password);
       
       if (!this.state.acceptTerms) {
         alert('Please accept the Terms of Service to continue.');
         return;
       }
       
-      if (!emailValidation.isValid || !passwordValidation.isValid || !usernameValidation.isValid || isBreach) {
+      if (!emailValidation.isValid || !passwordValidation.isValid || !usernameValidation.isValid) {
         this.setState({
           emailError: emailValidation.isValid ? '' : emailValidation.message,
-          passwordError: passwordValidation.isValid && !isBreach ? '' : (isBreach ? 'Password found in data breaches' : passwordValidation.message),
+          passwordError: passwordValidation.isValid ? '' : passwordValidation.message,
           usernameError: usernameValidation.isValid ? '' : usernameValidation.message
         });
         return;

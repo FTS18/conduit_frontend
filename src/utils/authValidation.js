@@ -10,74 +10,34 @@ export const sanitizeInput = (input) => {
     .trim();
 };
 
-// Email validation utility with enhanced checks
+// Email validation utility - MINIMAL
 export const validateEmail = (email) => {
-  const sanitized = sanitizeInput(email);
+  const trimmed = (email || '').trim();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const isValid = emailRegex.test(sanitized);
+  const isValid = emailRegex.test(trimmed);
   
-  if (!sanitized) return { isValid: false, message: 'Email is required' };
-  if (sanitized.length > 254) return { isValid: false, message: 'Email is too long' };
+  if (!trimmed) return { isValid: false, message: 'Email is required' };
+  if (trimmed.length > 254) return { isValid: false, message: 'Email is too long' };
   if (!isValid) return { isValid: false, message: 'Please enter a valid email address' };
-  
-  // Check for disposable email providers
-  const disposableDomains = ['tempmail.com', '10minutemail.com', 'guerrillamail.com', 'maildrop.cc'];
-  const domain = sanitized.split('@')[1].toLowerCase();
-  if (disposableDomains.includes(domain)) {
-    return { isValid: false, message: 'Disposable email addresses are not allowed' };
-  }
   
   return { isValid: true, message: '' };
 };
 
-// Password strength validation - MUCH STRICTER
+// Password strength validation - NO RESTRICTIONS
+// Accept any password, just show strength indicator
 export const validatePassword = (password) => {
-  if (!password) return { isValid: false, message: 'Password is required', strength: 0 };
-  if (password.length < 8) {
-    return { isValid: false, message: 'Password must be at least 8 characters', strength: 0 };
+  if (!password || password.trim() === '') {
+    return { isValid: false, message: '', strength: 0 };
   }
   
-  // Check for common weak patterns
-  const weakPatterns = [
-    /^(.)\1+$/,              // All same character (aaaaaa)
-    /^1234|^qwerty|^abc|^password/i,  // Common sequences
-    /(.)\1{2,}/              // 3+ repeated chars
-  ];
-  
-  if (weakPatterns.some(p => p.test(password))) {
-    return { isValid: false, message: 'Password is too weak - avoid patterns', strength: 0 };
-  }
-  
+  // Calculate strength for UI feedback only (no enforcement)
   const hasUpper = /[A-Z]/.test(password);
   const hasLower = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
   const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const strength = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
   
-  const checks = [hasUpper, hasLower, hasNumber, hasSpecial];
-  const strength = checks.filter(Boolean).length;
-  
-  // Require at least 3 of 4 criteria
-  if (strength < 3) {
-    const missing = [];
-    if (!hasUpper) missing.push('uppercase');
-    if (!hasLower) missing.push('lowercase');
-    if (!hasNumber) missing.push('numbers');
-    if (!hasSpecial) missing.push('special characters');
-    
-    return { 
-      isValid: false, 
-      message: `Password needs ${missing.slice(0, 2).join(', ')} for security`, 
-      strength,
-      missing
-    };
-  }
-  
-  // Check for common passwords
-  const commonPasswords = ['123456', 'password', '123456789', 'qwerty', 'abc123', '12345678'];
-  if (commonPasswords.includes(password.toLowerCase())) {
-    return { isValid: false, message: 'This password is too common. Please choose something unique', strength };
-  }
-  
+  // Always valid - user can use any password
   return { isValid: true, message: '', strength, missing: [] };
 };
 
